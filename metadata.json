@@ -1,0 +1,7 @@
+{
+  "name": "SonicWave AI Radio",
+  "description": "Global radio streaming powered by Radio Browser API and Gemini AI for smart recommendations.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SonicWave AI Radio</title>
+    <meta name="theme-color" content="#22D3EE" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/faviconn.png" />
+    <link rel="apple-touch-icon" href="/faviconn.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              sonic: {
+                start: "#22D3EE", // Cyan 400
+                end: "#818CF8", // Indigo 400
+                dark: "#0F172A", // Slate 900
+                darker: "#020617", // Slate 950
+              },
+              primary: {
+                DEFAULT: "#22D3EE",
+                hover: "#06B6D4",
+              },
+            },
+            animation: {
+              "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+              "sound-wave": "soundWave 1.2s ease-in-out infinite",
+              shimmer: "shimmer 2s linear infinite",
+            },
+            keyframes: {
+              soundWave: {
+                "0%, 100%": { height: "20%" },
+                "50%": { height: "100%" },
+              },
+              shimmer: {
+                "0%": { backgroundPosition: "-200% 0" },
+                "100%": { backgroundPosition: "200% 0" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #020617;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #283548;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #263448;
+      }
+
+      body {
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .sonic-gradient {
+        background: linear-gradient(135deg, #12cae7 0%, #4251d9 100%);
+      }
+
+      .sonic-glass {
+        background: rgba(15, 23, 42, 0.7);
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
+      }
+
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@^19.2.3",
+          "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+          "react/": "https://esm.sh/react@^19.2.3/",
+          "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+          "lucide-react": "https://esm.sh/lucide-react@^0.561.0"
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="/index.css" />
+  </head>
+  <body
+    class="bg-slate-50 text-slate-900 dark:bg-sonic-darker dark:text-slate-100 selection:bg-cyan-500/30"
+  >
+    <div id="root"></div>
+    <script type="module" src="/src/index.tsx"></script>
+
+    <!-- Script de analíticas (Simple Analytics) -->
+    <script
+      async
+      src="https://scripts.simpleanalyticscdn.com/latest.js"
+    ></script>
+
+  </body>
+</html>
