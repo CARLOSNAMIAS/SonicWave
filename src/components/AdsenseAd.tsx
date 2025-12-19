@@ -1,20 +1,20 @@
-// src/components/AdsenseAd.tsx
-
 import React, { useEffect } from 'react';
 
-// Declara la variable global de AdSense para TypeScript
 declare global {
   interface Window {
-    adsbygoogle: { [key:string]: unknown }[];
+    adsbygoogle?: { [key: string]: unknown }[];
   }
 }
 
 const AdsenseAd: React.FC = () => {
   useEffect(() => {
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (err) {
-      console.error("Error al cargar el anuncio de AdSense:", err);
+    // Solo ejecuta este código en el navegador
+    if (typeof window !== 'undefined') {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (err) {
+        console.error("Error al ejecutar el push de AdSense:", err);
+      }
     }
   }, []);
 
@@ -24,7 +24,7 @@ const AdsenseAd: React.FC = () => {
         className="adsbygoogle"
         style={{ display: 'block' }}
         data-ad-client="ca-pub-6983431049380018"
-        data-ad-slot="9584148800" // ¡Tu ID de bloque de anuncios ya está aquí!
+        data-ad-slot="9584148800"
         data-ad-format="auto"
         data-full-width-responsive="true"
       ></ins>
