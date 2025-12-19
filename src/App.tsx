@@ -14,7 +14,12 @@ const POPULAR_COUNTRIES = [
   { name: 'USA', code: 'us', label: 'USA' },
   { name: 'Mexico', code: 'mx', label: 'México' },
   { name: 'Argentina', code: 'ar', label: 'Arg' },
+  { name: 'Bolivia', code: 'bo', label: 'Bolivia' },
+  { name: 'Chile', code: 'cl', label: 'Chile' },
   { name: 'Colombia', code: 'co', label: 'Col' },
+  { name: 'Ecuador', code: 'ec', label: 'Ecuador' },
+  { name: 'Peru', code: 'pe', label: 'Perú' },
+  { name: 'Uruguay', code: 'uy', label: 'Uruguay' },
   { name: 'Brazil', code: 'br', label: 'Brasil' },
   { name: 'France', code: 'fr', label: 'Francia' },
   { name: 'Italy', code: 'it', label: 'Italia' },
@@ -132,8 +137,14 @@ const App: React.FC = () => {
     setIsFetching(true);
     const metropolisData = await searchStations({ name: 'Metropolis 103.9', limit: 1 });
     const topData = await getTopStations();
+    
+    // Ensure Metropolis is not duplicated if it's already in topData
+    const topDataWithoutMetropolis = topData.filter(s => 
+      metropolisData.length > 0 ? s.stationuuid !== metropolisData[0].stationuuid : true
+    );
+    
     setFeaturedStations(metropolisData);
-    setStations(topData);
+    setStations([...metropolisData, ...topDataWithoutMetropolis]);
     setIsFetching(false);
   };
 
@@ -367,25 +378,24 @@ const App: React.FC = () => {
              </span>
            </div>
            
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
-            {isFetching ? (
-              Array(10).fill(0).map((_, i) => <div key={i} className="h-72 bg-slate-200 dark:bg-slate-800/40 rounded-3xl animate-pulse" />)
-            ) : (
-              displayedStations.map(s => (
-                <StationCard 
-                  key={s.stationuuid} 
-                  station={s} 
-                  isPlaying={currentStation?.stationuuid === s.stationuuid && isPlaying} 
-                  isFavorite={favorites.some(f => f.stationuuid === s.stationuuid)}
-                  onPlay={handlePlayStation}
-                  onToggleFavorite={station => {
-                    setFavorites(prev => prev.some(f => f.stationuuid === station.stationuuid) ? prev.filter(f => f.stationuuid !== station.stationuuid) : [...prev, station]);
-                  }}
-                />
-              ))
-            )}
-          </div>
-
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+                       {isFetching ? (
+                         Array(10).fill(0).map((_, i) => <div key={i} className="h-72 bg-slate-200 dark:bg-slate-800/40 rounded-3xl animate-pulse" />)
+                       ) : (
+                         displayedStations.map(s => (
+                           <StationCard
+                             key={s.stationuuid}
+                             station={s}
+                             isPlaying={currentStation?.stationuuid === s.stationuuid && isPlaying}
+                             isFavorite={favorites.some(f => f.stationuuid === s.stationuuid)}
+                             onPlay={handlePlayStation}
+                             onToggleFavorite={station => {
+                               setFavorites(prev => prev.some(f => f.stationuuid === station.stationuuid) ? prev.filter(f => f.stationuuid !== station.stationuuid) : [...prev, station]);
+                             }}
+                           />
+                         ))
+                       )}
+                     </div>
           {displayedStations.length === 0 && !isFetching && (
             <div className="py-32 flex flex-col items-center text-center space-y-4">
                <div className="w-20 h-20 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400">
