@@ -6,6 +6,7 @@ import { getRadioRecommendations } from '@/services/geminiService';
 import StationCard from '@/components/StationCard';
 import PlayerBar from '@/components/PlayerBar';
 import AIDJModal from '@/components/AIDJModal';
+import AdsenseAd from '@/components/AdsenseAd';
 import { Search, Radio, Sparkles, Music, Coffee, Zap, Moon, Sun, AlertCircle, Trophy, Compass, Github, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 
 const POPULAR_COUNTRIES = [
@@ -313,6 +314,8 @@ const App: React.FC = () => {
                 <ChevronRight size={20} className="text-slate-600 dark:text-slate-300" />
               </button>
             </section>
+
+            <AdsenseAd />
 
             {aiReasoning && (
               <div className="relative group">
