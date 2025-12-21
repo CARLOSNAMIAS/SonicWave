@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { RadioStation, ViewState, SearchFilters } from '@/types';
 import { searchStations, getTopStations } from '@/services/radioService';
 import { getRadioRecommendations } from '@/services/geminiService';
+import { customVenezuelaStations } from '@/data/venezuelaStations';
 import StationCard from '@/components/StationCard';
 import PlayerBar from '@/components/PlayerBar';
 import AIDJModal from '@/components/AIDJModal';
@@ -135,16 +136,16 @@ const App: React.FC = () => {
 
   const loadInitialData = async () => {
     setIsFetching(true);
-    const metropolisData = await searchStations({ name: 'Metropolis 103.9', limit: 1 });
     const topData = await getTopStations();
     
-    // Ensure Metropolis is not duplicated if it's already in topData
-    const topDataWithoutMetropolis = topData.filter(s => 
-      metropolisData.length > 0 ? s.stationuuid !== metropolisData[0].stationuuid : true
-    );
+    // Get the UUIDs of the custom stations to filter them out from the top data
+    const customStationUUIDs = new Set(customVenezuelaStations.map(s => s.stationuuid));
+    const topDataWithoutCustom = topData.filter(s => !customStationUUIDs.has(s.stationuuid));
     
-    setFeaturedStations(metropolisData);
-    setStations([...metropolisData, ...topDataWithoutMetropolis]);
+    // Set featured stations to an empty array so the custom ones don't appear there
+    setFeaturedStations([]);
+    // The main list will contain the custom stations plus the top stations
+    setStations([...customVenezuelaStations, ...topDataWithoutCustom]);
     setIsFetching(false);
   };
 
@@ -154,14 +155,11 @@ const App: React.FC = () => {
     setPlaybackError(null);
     const results = await searchStations(filters);
     
-    if (filters.country === 'Venezuela' || (filters.name && filters.name.toLowerCase().includes('maracaibo'))) {
-      const metropolis = await searchStations({ name: 'Metropolis 103.9', limit: 1 });
-      if (metropolis.length > 0) {
-        const filteredResults = results.filter(s => s.stationuuid !== metropolis[0].stationuuid);
-        setStations([metropolis[0], ...filteredResults]);
-      } else {
-        setStations(results);
-      }
+    // For Venezuela searches, prepend our custom list and remove duplicates
+    if (filters.country === 'Venezuela') {
+      const customStationUUIDs = new Set(customVenezuelaStations.map(s => s.stationuuid));
+      const filteredResults = results.filter(s => !customStationUUIDs.has(s.stationuuid));
+      setStations([...customVenezuelaStations, ...filteredResults]);
     } else {
       setStations(results);
     }
