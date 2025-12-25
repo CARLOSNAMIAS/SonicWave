@@ -3,6 +3,16 @@ import React, { useState } from 'react';
 import { RadioStation } from '@/types';
 import { Play, Pause, Volume2, VolumeX, SkipBack, SkipForward, ChevronDown, ChevronUp, Music2, Maximize2 } from 'lucide-react';
 
+/**
+ * Props for the PlayerBar component.
+ * @property {RadioStation | null} currentStation - The radio station currently loaded in the player.
+ * @property {boolean} isPlaying - Whether the audio is currently playing.
+ * @property {() => void} onPlayPause - Function to toggle play/pause state.
+ * @property {number} volume - The current volume level (0 to 1).
+ * @property {(val: number) => void} onVolumeChange - Function to call when the volume is changed.
+ * @property {boolean} isLoading - Whether the audio stream is currently loading.
+ * @property {React.RefObject<HTMLAudioElement | null>} audioRef - Ref to the HTMLAudioElement for direct control.
+ */
 interface PlayerBarProps {
   currentStation: RadioStation | null;
   isPlaying: boolean;
@@ -13,6 +23,13 @@ interface PlayerBarProps {
   audioRef: React.RefObject<HTMLAudioElement | null>;
 }
 
+/**
+ * A responsive audio player component that appears at the bottom of the screen.
+ * It has two views:
+ * 1. A compact bar for desktop and mobile.
+ * 2. An expandable, full-screen view with more details, primarily for mobile.
+ * It displays the current station, playback controls, and volume controls.
+ */
 const PlayerBar: React.FC<PlayerBarProps> = ({ currentStation, isPlaying, onPlayPause, volume, onVolumeChange, isLoading }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -95,7 +112,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ currentStation, isPlaying, onPlay
                 <Maximize2 size={16} className="text-white" />
               </div>
             </div>
-            <div className="min-w-0 pr-4">
+            <div className="min-w-0 pr-4 hidden sm:block">
               <h4 className="font-bold text-slate-900 dark:text-white text-base truncate tracking-tight">{currentStation.name}</h4>
               <p className="text-xs font-bold text-cyan-500/80 uppercase tracking-widest truncate">{currentStation.country || 'Worldwide'}</p>
             </div>

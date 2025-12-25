@@ -1,5 +1,7 @@
-
 import React, { useState, useEffect, useRef } from 'react';
+import { useTheme } from '@/hooks/useTheme';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 import { RadioStation, ViewState, SearchFilters } from '@/types';
 import { searchStations, getTopStations } from '@/services/radioService';
 import { getRadioRecommendations } from '@/services/geminiService';
@@ -8,6 +10,8 @@ import StationCard from '@/components/StationCard';
 import PlayerBar from '@/components/PlayerBar';
 import AIDJModal from '@/components/AIDJModal';
 import { Search, Radio, Sparkles, Music, Coffee, Zap, Moon, Sun, AlertCircle, Trophy, Compass, Github, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
+import SkeletonCard from '@/components/SkeletonCard';
+
 
 const POPULAR_COUNTRIES = [
   { name: 'Venezuela', code: 've', label: 'Venezuela' },
@@ -37,30 +41,66 @@ const QUICK_MOODS = [
   { id: 'jazz', icon: <Music size={16} />, label: 'Jazz', tag: 'jazz' },
 ];
 
+const SEARCH_FILTERS = [
+  { id: 'tag', label: 'Género' },
+  { id: 'country', label: 'País' },
+  { id: 'name', label: 'Nombre' },
+];
+
+/**
+ * The main component of the SonicWave AI Radio application.
+ * It orchestrates the entire user interface and application logic, including:
+ * - State management for stations, views, and searches.
+ * - Integration of custom hooks for theme, favorites, and audio playback.
+ * - Handling data fetching from radio and AI services.
+ * - Rendering all major UI sections, components, and modals.
+ */
 const App: React.FC = () => {
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    return (localStorage.getItem('sonicwave_theme') as 'dark' | 'light') || 'dark';
-  });
+  // Custom hooks for core functionalities
+  const [theme, toggleTheme] = useTheme();
+  const [favorites, toggleFavorite] = useFavorites();
+  const {
+    audioRef,
+    currentStation,
+    isPlaying,
+    isLoading,
+    playbackError,
+    setPlaybackError,
+    volume,
+    handlePlayPause,
+    setVolume,
+    setIsLoading,
+    togglePlayPause,
+  } = useAudioPlayer();
+
+  // State for radio station data
   const [stations, setStations] = useState<RadioStation[]>([]);
   const [featuredStations, setFeaturedStations] = useState<RadioStation[]>([]);
-  const [favorites, setFavorites] = useState<RadioStation[]>([]);
-  const [currentStation, setCurrentStation] = useState<RadioStation | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(false);
-  const [playbackError, setPlaybackError] = useState<string | null>(null);
-  const [volume, setVolume] = useState(0.8);
-  const [view, setView] = useState<ViewState>(ViewState.HOME);
+  
+  // UI and async operation states
+  const [isFetching, setIsFetching] = useState(false); // Tracks when data is being fetched.
+  const [appError, setAppError] = useState<string | null>(null); // For general application errors.
+  const [view, setView] = useState<ViewState>(ViewState.HOME); // Controls which view is shown (Home vs. Favorites).
+  
+  // Search-related states
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'name' | 'country' | 'tag'>('tag');
+  
+  // AI DJ Modal and logic states
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-  const [aiProcessing, setAiProcessing] = useState(false);
-  const [aiReasoning, setAiReasoning] = useState<string | null>(null);
+  const [aiProcessing, setAiProcessing] = useState(false); // Tracks when the AI is processing a request.
+  const [aiReasoning, setAiReasoning] = useState<string | null>(null); // Stores the AI's textual response.
+  
+  // Mobile menu state
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Ref for the horizontal country list for scrolling.
   const countryScrollRef = useRef<HTMLDivElement | null>(null);
 
+  /**
+   * Handles scrolling the popular countries list horizontally.
+   * @param direction - The direction to scroll ('left' or 'right').
+   */
   const handleCountryScroll = (direction: 'left' | 'right') => {
     if (countryScrollRef.current) {
       const scrollAmount = 300;
@@ -71,91 +111,54 @@ const App: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const root = window.document.documentElement;
-    if (theme === 'dark') root.classList.add('dark');
-    else root.classList.remove('dark');
-    localStorage.setItem('sonicwave_theme', theme);
-  }, [theme]);
-
+  // Effect to load initial station data when the component mounts.
   useEffect(() => {
     loadInitialData();
-    const storedFavs = localStorage.getItem('sonicwave_favs');
-    if (storedFavs) setFavorites(JSON.parse(storedFavs));
-    const storedVolume = localStorage.getItem('sonicwave_volume');
-    if (storedVolume) setVolume(parseFloat(storedVolume));
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('sonicwave_favs', JSON.stringify(favorites));
-  }, [favorites]);
 
+  // Effect to lock body scrolling when the mobile menu is open.
   useEffect(() => {
     if (isMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
+    // Cleanup function to restore scrolling when the component unmounts.
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, [isMenuOpen]);
 
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-      localStorage.setItem('sonicwave_volume', volume.toString());
-    }
-  }, [volume]);
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !currentStation) return;
-    const streamUrl = currentStation.url_resolved || currentStation.url;
-    
-    if (audio.src !== streamUrl) {
-      setPlaybackError(null);
-      setIsLoading(true);
-      audio.pause();
-      audio.removeAttribute('crossorigin');
-      audio.src = streamUrl;
-      audio.load();
-    }
-
-    if (isPlaying) {
-      audio.play().catch(err => {
-        if (err.name !== 'AbortError') {
-          setPlaybackError("No se puede reproducir este stream actualmente.");
-          setIsPlaying(false);
-        }
-      });
-    } else {
-      audio.pause();
-    }
-  }, [currentStation, isPlaying]);
-
+  /**
+   * Fetches the initial data for the application, including top stations
+   * and custom Venezuelan stations.
+   */
   const loadInitialData = async () => {
     setIsFetching(true);
     const topData = await getTopStations();
     
-    // Get the UUIDs of the custom stations to filter them out from the top data
+    // Ensure custom Venezuelan stations aren't duplicated if they also appear in the top list.
     const customStationUUIDs = new Set(customVenezuelaStations.map(s => s.stationuuid));
     const topDataWithoutCustom = topData.filter(s => !customStationUUIDs.has(s.stationuuid));
     
-    // Set featured stations to an empty array so the custom ones don't appear there
-    setFeaturedStations([]);
-    // The main list will contain the custom stations plus the top stations
+    setFeaturedStations([]); // Clear featured stations, can be used for other purposes.
     setStations([...customVenezuelaStations, ...topDataWithoutCustom]);
     setIsFetching(false);
   };
 
+  /**
+   * Performs a station search using the radio service based on the provided filters.
+   * @param filters - An object containing search criteria (e.g., tag, country, name).
+   */
   const performSearch = async (filters: SearchFilters) => {
     setIsFetching(true);
-    setAiReasoning(null);
-    setPlaybackError(null);
+    setAiReasoning(null); // Clear previous AI reasoning on new search.
+    setAppError(null);
     const results = await searchStations(filters);
     
-    // For Venezuela searches, prepend our custom list and remove duplicates
+    // Special handling for Venezuela to ensure custom stations are always at the top.
     if (filters.country === 'Venezuela') {
       const customStationUUIDs = new Set(customVenezuelaStations.map(s => s.stationuuid));
       const filteredResults = results.filter(s => !customStationUUIDs.has(s.stationuuid));
@@ -164,47 +167,51 @@ const App: React.FC = () => {
       setStations(results);
     }
     
-    setView(ViewState.HOME);
+    setView(ViewState.HOME); // Switch back to the home view to show results.
     setIsFetching(false);
   };
 
+  /**
+   * Handles the submission of the search form.
+   */
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!searchQuery.trim()) return;
     performSearch({ [searchType]: searchQuery });
   };
 
-  const handlePlayStation = (station: RadioStation) => {
-    setPlaybackError(null);
-    if (currentStation?.stationuuid === station.stationuuid) {
-      setIsPlaying(!isPlaying);
-    } else {
-      setCurrentStation(station);
-      setIsPlaying(true);
-    }
-  };
 
+  /**
+   * Handles the request to the AI DJ. It sends the user's prompt to the
+   * backend service and then performs a search based on the AI's response.
+   * @param prompt - The user's natural language request.
+   */
   const handleAIRequest = async (prompt: string) => {
     setAiProcessing(true);
+    setAppError(null);
+    setPlaybackError(null);
     try {
       const rec = await getRadioRecommendations(prompt);
-      setAiReasoning(rec.reasoning);
+      setAiReasoning(rec.reasoning); // Display the AI's reasoning.
       setIsAIModalOpen(false);
-      await performSearch(rec.searchQuery);
+      await performSearch(rec.searchQuery); // Perform the search suggested by the AI.
     } catch (error) {
-      setPlaybackError("El DJ de IA no está disponible en este momento.");
+      console.error("AI Request Error:", error);
+      setAppError("El DJ de IA no está disponible en este momento.");
     } finally {
       setAiProcessing(false);
     }
   };
 
-  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
+  // Determine which list of stations to display based on the current view.
   const displayedStations = view === ViewState.FAVORITES ? favorites : stations;
 
   return (
     <div className="min-h-screen pb-40 bg-slate-50 dark:bg-sonic-darker transition-colors duration-500">
+      {/* The single audio element controlled by the useAudioPlayer hook */}
       <audio ref={audioRef} onWaiting={() => setIsLoading(true)} onPlaying={() => setIsLoading(false)} onCanPlay={() => setIsLoading(false)} />
 
+      {/* --- Navigation Bar --- */}
       <nav className="sticky top-0 z-40 sonic-glass border-b border-black/5 dark:border-white/5 h-20">
         <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
           <div 
@@ -217,23 +224,30 @@ const App: React.FC = () => {
             <span className="text-2xl font-black dark:text-white tracking-tighter uppercase">Sonic<span className="text-cyan-500">Wave</span></span>
           </div>
 
+          {/* Desktop Navigation Links */}
           <div className="hidden lg:flex items-center space-x-8">
-            <button onClick={() => setView(ViewState.HOME)} className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.HOME ? 'text-cyan-500' : 'text-slate-400 hover:text-white'}`}>Descubrir</button>
-            <button onClick={() => setView(ViewState.FAVORITES)} className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.FAVORITES ? 'text-cyan-500' : 'text-slate-400 hover:text-white'}`}>Favoritos</button>
+            <button onClick={() => setView(ViewState.HOME)} className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.HOME ? 'text-cyan-500' : 'text-slate-600 hover:text-cyan-500'}`}>Descubrir</button>
+            <button onClick={() => setView(ViewState.FAVORITES)} className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.FAVORITES ? 'text-cyan-500' : 'text-slate-600 hover:text-cyan-500'}`}>Favoritos</button>
           </div>
 
           <div className="flex items-center space-x-4">
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Trigger */}
             <button
+              type="button"
+              title="Abrir menú"
               onClick={() => setIsMenuOpen(true)}
               className="lg:hidden w-10 h-10 flex items-center justify-center text-slate-400 hover:text-cyan-500 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl transition-all"
             >
               <Menu size={20} />
             </button>
+            {/* Theme Toggle Button */}
             <button onClick={toggleTheme} className="hidden sm:flex w-10 h-10 items-center justify-center text-slate-400 hover:text-cyan-500 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl transition-all">
               {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
+            {/* AI DJ Modal Trigger */}
             <button 
+              type="button"
+              title="Abrir asistente de IA DJ"
               onClick={() => setIsAIModalOpen(true)} 
               className="hidden lg:flex sonic-gradient text-white px-6 py-2.5 rounded-full text-[13px] font-black uppercase tracking-widest items-center gap-2 hover:shadow-xl hover:shadow-cyan-500/20 active:scale-95 transition-all"
             >
@@ -243,15 +257,20 @@ const App: React.FC = () => {
         </div>
       </nav>
 
+      {/* --- Main Content Area --- */}
       <main className="max-w-7xl mx-auto px-6 py-10">
+        {/* Playback Error Display */}
         {playbackError && (
           <div className="mb-8 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-3 text-rose-400 animate-in fade-in slide-in-from-top-4">
             <AlertCircle size={20} /> <p className="font-bold text-sm tracking-tight">{playbackError}</p>
           </div>
         )}
-
+        
+        {/* === HOME VIEW === */}
         {view === ViewState.HOME && (
           <div className="space-y-12">
+            
+            {/* --- Search and Filter Section --- */}
             <section>
               <div className="flex flex-col md:flex-row md:items-center gap-6 mb-8">
                 <div className="flex-1 max-w-2xl relative group">
@@ -268,18 +287,25 @@ const App: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-black uppercase tracking-widest text-slate-400 mr-2 hidden sm:block">Filtro:</span>
-                  <select 
-                    value={searchType} 
-                    onChange={e => setSearchType(e.target.value as any)} 
-                    className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl px-6 py-4 text-sm font-bold border border-slate-200 dark:border-white/5 outline-none cursor-pointer focus:ring-2 focus:ring-cyan-500/50 transition-all shadow-sm"
-                  >
-                    <option value="tag">Género</option>
-                    <option value="country">País</option>
-                    <option value="name">Nombre</option>
-                  </select>
+                  <div className="flex items-center gap-1 p-1 bg-slate-200/50 dark:bg-slate-800/50 rounded-2xl">
+                    {SEARCH_FILTERS.map(filter => (
+                      <button
+                        key={filter.id}
+                        onClick={() => setSearchType(filter.id as any)}
+                        className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${
+                          searchType === filter.id
+                            ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm'
+                            : 'text-slate-500 hover:bg-white/50 dark:hover:bg-slate-700/50'
+                        }`}
+                      >
+                        {filter.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
+              {/* Quick Mood/Genre Buttons */}
               <div className="flex flex-wrap gap-3">
                 {QUICK_MOODS.map(mood => (
                   <button 
@@ -293,8 +319,9 @@ const App: React.FC = () => {
               </div>
             </section>
 
-            <section className="space-y-6 relative"> {/* Added relative positioning here */}
-              <div className="flex items-center gap-3 text-slate-400 mb-6"> {/* Simplified title row */}
+            {/* --- Popular Countries Section --- */}
+            <section className="space-y-6 relative">
+              <div className="flex items-center gap-3 text-slate-400 mb-6">
                 <Compass size={20} />
                 <h3 className="text-[11px] font-black uppercase tracking-[0.2em]">Países populares</h3>
               </div>
@@ -308,21 +335,26 @@ const App: React.FC = () => {
                   </button>
                 ))}
               </div>
-              {/* Overlay scroll buttons */}
+              {/* Scroll Buttons for Country List */}
               <button 
+                type="button"
+                title="Desplazar países hacia la izquierda"
                 onClick={() => handleCountryScroll('left')} 
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/20 dark:bg-black/20 rounded-full shadow-lg hover:bg-white/30 dark:hover:bg-black/30 backdrop-blur-sm transition-colors z-10"
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/20 dark:bg-black/20 rounded-full shadow-lg hover:bg-white/30 dark:hover:bg-black/30 backdrop-blur-sm transition-colors z-10 hidden md:block"
               >
                 <ChevronLeft size={20} className="text-slate-600 dark:text-slate-300" />
               </button>
               <button 
+                type="button"
+                title="Desplazar países hacia la derecha"
                 onClick={() => handleCountryScroll('right')} 
-                className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/20 dark:bg-black/20 rounded-full shadow-lg hover:bg-white/30 dark:hover:bg-black/30 backdrop-blur-sm transition-colors z-10"
+                className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/20 dark:bg-black/20 rounded-full shadow-lg hover:bg-white/30 dark:hover:bg-black/30 backdrop-blur-sm transition-colors z-10 hidden md:block"
               >
                 <ChevronRight size={20} className="text-slate-600 dark:text-slate-300" />
               </button>
             </section>
-
+            
+            {/* --- AI Reasoning Display --- */}
             {aiReasoning && (
               <div className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
@@ -338,7 +370,7 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Featured Section */}
+        {/* === FEATURED STATIONS (Example Section) === */}
         {view === ViewState.HOME && featuredStations.length > 0 && !searchQuery && (
           <section className="mt-16 space-y-8">
             <div className="flex items-center justify-between">
@@ -349,23 +381,22 @@ const App: React.FC = () => {
                 <h3 className="text-2xl font-black dark:text-white tracking-tighter">Destacadas para ti</h3>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 lg:gap-8">
               {featuredStations.map(s => (
                 <StationCard 
                   key={s.stationuuid} 
                   station={s} 
                   isPlaying={currentStation?.stationuuid === s.stationuuid && isPlaying} 
                   isFavorite={favorites.some(f => f.stationuuid === s.stationuuid)}
-                  onPlay={handlePlayStation}
-                  onToggleFavorite={station => {
-                    setFavorites(prev => prev.some(f => f.stationuuid === station.stationuuid) ? prev.filter(f => f.stationuuid !== station.stationuuid) : [...prev, station]);
-                  }}
+                  onPlay={handlePlayPause}
+                  onToggleFavorite={toggleFavorite}
                 />
               ))}
             </div>
           </section>
         )}
 
+        {/* --- Main Station List (Home or Favorites) --- */}
         <section className="mt-20 space-y-10">
            <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/5 pb-4">
              <h3 className="text-xl font-black dark:text-white tracking-tight">
@@ -376,24 +407,25 @@ const App: React.FC = () => {
              </span>
            </div>
            
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
-                       {isFetching ? (
-                         Array(10).fill(0).map((_, i) => <div key={i} className="h-72 bg-slate-200 dark:bg-slate-800/40 rounded-3xl animate-pulse" />)
-                       ) : (
-                         displayedStations.map(s => (
-                           <StationCard
-                             key={s.stationuuid}
-                             station={s}
-                             isPlaying={currentStation?.stationuuid === s.stationuuid && isPlaying}
-                             isFavorite={favorites.some(f => f.stationuuid === s.stationuuid)}
-                             onPlay={handlePlayStation}
-                             onToggleFavorite={station => {
-                               setFavorites(prev => prev.some(f => f.stationuuid === station.stationuuid) ? prev.filter(f => f.stationuuid !== station.stationuuid) : [...prev, station]);
-                             }}
-                           />
-                         ))
-                       )}
-                     </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 lg:gap-8">
+                {isFetching ? (
+                  // Show skeleton loaders while fetching data.
+                  Array(10).fill(0).map((_, i) => <SkeletonCard key={i} />)
+                ) : (
+                  // Render the list of stations.
+                  displayedStations.map(s => (
+                    <StationCard
+                      key={s.stationuuid}
+                      station={s}
+                      isPlaying={currentStation?.stationuuid === s.stationuuid && isPlaying}
+                      isFavorite={favorites.some(f => f.stationuuid === s.stationuuid)}
+                      onPlay={handlePlayPause}
+                      onToggleFavorite={toggleFavorite}
+                    />
+                  ))
+                )}
+            </div>
+          {/* Empty state message when no stations are available. */}
           {displayedStations.length === 0 && !isFetching && (
             <div className="py-32 flex flex-col items-center text-center space-y-4">
                <div className="w-20 h-20 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400">
@@ -405,6 +437,7 @@ const App: React.FC = () => {
         </section>
       </main>
 
+      {/* --- Footer --- */}
       <footer className="mt-20 py-8 border-t border-slate-200 dark:border-white/5 text-center text-sm text-slate-500 dark:text-slate-400">
         <p>&copy; {new Date().getFullYear()} SonicWave AI Radio. Todos los derechos reservados.</p>
         <div className="mt-2 inline-flex items-center gap-2">
@@ -420,19 +453,23 @@ const App: React.FC = () => {
           </a>
         </div>
       </footer>
-
+      
+      {/* --- Modals and Overlays --- */}
       <AIDJModal isOpen={isAIModalOpen} onClose={() => setIsAIModalOpen(false)} onSubmit={handleAIRequest} isProcessing={aiProcessing} />
 
-      {/* Mobile Menu */}
+      {/* Mobile Off-canvas Menu */}
       <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        {/* Backdrop */}
         <div className="absolute inset-0 bg-black/60" onClick={() => setIsMenuOpen(false)}></div>
         
-        {/* Menu Panel */}
         <div className={`relative z-10 w-80 h-full bg-slate-100 dark:bg-sonic-darker shadow-2xl transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-white/5">
             <span className="text-xl font-black dark:text-white tracking-tighter uppercase">Menú</span>
-            <button onClick={() => setIsMenuOpen(false)} className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-cyan-500 rounded-xl transition-all">
+            <button 
+              type="button"
+              title="Cerrar menú"
+              onClick={() => setIsMenuOpen(false)} 
+              className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-cyan-500 rounded-xl transition-all"
+            >
               <X size={20} />
             </button>
           </div>
@@ -458,16 +495,24 @@ const App: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* AI DJ Floating Action Button (Mobile) */}
-      <button
-        onClick={() => setIsAIModalOpen(true)}
-        className="lg:hidden fixed bottom-28 right-6 z-40 w-16 h-16 sonic-gradient rounded-full flex items-center justify-center shadow-2xl shadow-cyan-500/30 active:scale-95 transition-transform"
-      >
-        <Sparkles size={28} fill="currentColor" className="text-white" />
-      </button>
-
-      <PlayerBar currentStation={currentStation} isPlaying={isPlaying} onPlayPause={() => setIsPlaying(!isPlaying)} volume={volume} onVolumeChange={setVolume} isLoading={isLoading} audioRef={audioRef} />
+      
+      {/* Floating Action Button for AI DJ on mobile */}
+      <div className="lg:hidden fixed bottom-28 right-6 z-40">
+        <span className="relative flex h-14 w-14">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+          <button
+            type="button"
+            title="Abrir asistente de IA DJ"
+            onClick={() => setIsAIModalOpen(true)}
+            className="relative inline-flex w-14 h-14 sonic-gradient rounded-full items-center justify-center shadow-2xl shadow-cyan-500/30 active:scale-95 transition-transform"
+          >
+            <Sparkles size={24} fill="currentColor" className="text-white" />
+          </button>
+        </span>
+      </div>
+      
+      {/* The global player bar */}
+      <PlayerBar currentStation={currentStation} isPlaying={isPlaying} onPlayPause={togglePlayPause} volume={volume} onVolumeChange={setVolume} isLoading={isLoading} audioRef={audioRef} />
     </div>
   );
 };

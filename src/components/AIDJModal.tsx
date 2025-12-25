@@ -1,7 +1,32 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, X, Send } from 'lucide-react';
 
+const ALL_SUGGESTIONS = [
+  'Música lofi para una noche lluviosa',
+  'Jazz suave para concentrarse',
+  'Noticias de España',
+  'Rock clásico de los 80s',
+  'Electrónica bailable para empezar el día',
+  'Estaciones de salsa cubana',
+  'Música para hacer ejercicio intenso',
+  'Pop latino alegre',
+  'Blues para un ambiente relajado',
+  'Estaciones de meditación y yoga',
+  'Bandas sonoras de películas',
+  'Música clásica instrumental',
+  'Radio de noticias internacionales',
+  'Éxitos actuales de pop',
+  'Folk acústico tranquilo',
+];
+
+/**
+ * Props for the AIDJModal component.
+ * @property {boolean} isOpen - Whether the modal is currently open.
+ * @property {() => void} onClose - Function to call when the modal should be closed.
+ * @property {(prompt: string) => void} onSubmit - Function to call with the user's prompt when the form is submitted.
+ * @property {boolean} isProcessing - Whether the AI is currently processing a request.
+ */
 interface AIDJModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -9,8 +34,22 @@ interface AIDJModalProps {
   isProcessing: boolean;
 }
 
+/**
+ * A modal component that allows users to interact with the AI DJ.
+ * It provides an input for users to type a prompt, displays suggestions,
+ * and handles the submission and processing state.
+ */
 const AIDJModal: React.FC<AIDJModalProps> = ({ isOpen, onClose, onSubmit, isProcessing }) => {
   const [input, setInput] = useState('');
+  const [currentSuggestions, setCurrentSuggestions] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Shuffle the ALL_SUGGESTIONS and pick a random subset (e.g., 5-6)
+      const shuffled = ALL_SUGGESTIONS.sort(() => 0.5 - Math.random());
+      setCurrentSuggestions(shuffled.slice(0, 5)); // Display 5 random suggestions
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -73,7 +112,7 @@ const AIDJModal: React.FC<AIDJModalProps> = ({ isOpen, onClose, onSubmit, isProc
               <div className="h-px flex-1 bg-slate-200 dark:bg-white/5"></div>
             </div>
             <div className="flex flex-wrap gap-2 justify-center">
-              {['Metropolis 103.9', 'Jazz para leer', 'Noticias de España', 'Rock clásico 80s', 'Electro Energy'].map((suggestion) => (
+              {currentSuggestions.map((suggestion) => (
                 <button
                   key={suggestion}
                   onClick={() => setInput(suggestion)}

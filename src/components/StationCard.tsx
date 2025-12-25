@@ -3,6 +3,14 @@ import React from 'react';
 import { RadioStation } from '@/types';
 import { Play, Pause, Heart, Music2 } from 'lucide-react';
 
+/**
+ * Props for the StationCard component.
+ * @property {RadioStation} station - The station data to display.
+ * @property {boolean} isPlaying - Whether this specific station is currently playing.
+ * @property {boolean} isFavorite - Whether this station is in the user's favorites.
+ * @property {(station: RadioStation) => void} onPlay - Callback to play or pause the station.
+ * @property {(station: RadioStation) => void} onToggleFavorite - Callback to add or remove the station from favorites.
+ */
 interface StationCardProps {
   station: RadioStation;
   isPlaying: boolean;
@@ -11,6 +19,11 @@ interface StationCardProps {
   onToggleFavorite: (station: RadioStation) => void;
 }
 
+/**
+ * A card component that displays information about a single radio station.
+ * It shows the station's name, country, and artwork. It also provides controls
+ * to play/pause the station and to add/remove it from favorites.
+ */
 const StationCard: React.FC<StationCardProps> = ({ 
   station, 
   isPlaying, 
@@ -33,9 +46,6 @@ const StationCard: React.FC<StationCardProps> = ({
             src={station.favicon} 
             alt={station.name} 
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = `https://picsum.photos/400/400?radio=${station.stationuuid}`;
-            }} 
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-600">
