@@ -4,12 +4,12 @@ import { RadioStation } from '@/types';
 import { Play, Pause, Heart, Music2 } from 'lucide-react';
 
 /**
- * Props for the StationCard component.
- * @property {RadioStation} station - The station data to display.
- * @property {boolean} isPlaying - Whether this specific station is currently playing.
- * @property {boolean} isFavorite - Whether this station is in the user's favorites.
- * @property {(station: RadioStation) => void} onPlay - Callback to play or pause the station.
- * @property {(station: RadioStation) => void} onToggleFavorite - Callback to add or remove the station from favorites.
+ * Props para el componente StationCard.
+ * @property {RadioStation} station - Los datos de la emisora a mostrar.
+ * @property {boolean} isPlaying - Si esta emisora específica se está reproduciendo actualmente.
+ * @property {boolean} isFavorite - Si esta emisora está en los favoritos del usuario.
+ * @property {(station: RadioStation) => void} onPlay - Callback para reproducir o pausar la emisora.
+ * @property {(station: RadioStation) => void} onToggleFavorite - Callback para agregar o eliminar la emisora de favoritos.
  */
 interface StationCardProps {
   station: RadioStation;
@@ -20,9 +20,9 @@ interface StationCardProps {
 }
 
 /**
- * A card component that displays information about a single radio station.
- * It shows the station's name, country, and artwork. It also provides controls
- * to play/pause the station and to add/remove it from favorites.
+ * Un componente de tarjeta que muestra información sobre una única emisora de radio.
+ * Muestra el nombre, el país y la imagen de la emisora. También proporciona controles
+ * para reproducir/pausar la emisora y para agregarla/eliminarla de favoritos.
  */
 const StationCard: React.FC<StationCardProps> = ({ 
   station, 
@@ -53,7 +53,7 @@ const StationCard: React.FC<StationCardProps> = ({
           </div>
         )}
         
-        {/* Play Button Overlay */}
+        {/* Superposición del botón de reproducción */}
         <div className={`
           absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300
           ${isPlaying ? 'opacity-100' : ''}
@@ -90,6 +90,8 @@ const StationCard: React.FC<StationCardProps> = ({
       </div>
 
       <button 
+        type="button"
+        aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         onClick={(e) => {
           e.stopPropagation();
           onToggleFavorite(station);

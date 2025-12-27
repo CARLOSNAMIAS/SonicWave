@@ -9,7 +9,7 @@ import { customVenezuelaStations } from '@/data/venezuelaStations';
 import StationCard from '@/components/StationCard';
 import PlayerBar from '@/components/PlayerBar';
 import AIDJModal from '@/components/AIDJModal';
-import { Search, Radio, Sparkles, Music, Coffee, Zap, Moon, Sun, AlertCircle, Trophy, Compass, Github, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
+import { Radio, Sparkles, Music, Coffee, Zap, Moon, Sun, AlertCircle, Trophy, Compass, Github, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 import SkeletonCard from '@/components/SkeletonCard';
 
 
@@ -41,11 +41,7 @@ const QUICK_MOODS = [
   { id: 'jazz', icon: <Music size={16} />, label: 'Jazz', tag: 'jazz' },
 ];
 
-const SEARCH_FILTERS = [
-  { id: 'tag', label: 'Género' },
-  { id: 'country', label: 'País' },
-  { id: 'name', label: 'Nombre' },
-];
+
 
 /**
  * The main component of the SonicWave AI Radio application.
@@ -83,8 +79,7 @@ const App: React.FC = () => {
   const [view, setView] = useState<ViewState>(ViewState.HOME); // Controls which view is shown (Home vs. Favorites).
   
   // Search-related states
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchType, setSearchType] = useState<'name' | 'country' | 'tag'>('tag');
+
   
   // AI DJ Modal and logic states
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
@@ -171,14 +166,7 @@ const App: React.FC = () => {
     setIsFetching(false);
   };
 
-  /**
-   * Handles the submission of the search form.
-   */
-  const handleSearch = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!searchQuery.trim()) return;
-    performSearch({ [searchType]: searchQuery });
-  };
+
 
 
   /**
@@ -205,6 +193,32 @@ const App: React.FC = () => {
 
   // Determine which list of stations to display based on the current view.
   const displayedStations = view === ViewState.FAVORITES ? favorites : stations;
+
+  /**
+   * Handles skipping to the next or previous station in the current list.
+   * @param direction - The direction to skip ('next' or 'previous').
+   */
+  const handleSkip = (direction: 'next' | 'previous') => {
+    if (!currentStation || displayedStations.length === 0) return;
+
+    const currentIndex = displayedStations.findIndex(s => s.stationuuid === currentStation.stationuuid);
+    // If the current station isn't in the list (e.g., it was a search result and then the user switched to favorites),
+    // just play the first station from the current list.
+    if (currentIndex === -1) {
+      handlePlayPause(displayedStations[0]);
+      return;
+    }
+
+    let nextIndex;
+    if (direction === 'next') {
+      nextIndex = (currentIndex + 1) % displayedStations.length;
+    } else {
+      nextIndex = (currentIndex - 1 + displayedStations.length) % displayedStations.length;
+    }
+
+    const nextStation = displayedStations[nextIndex];
+    handlePlayPause(nextStation);
+  };
 
   return (
     <div className="min-h-screen pb-40 bg-slate-50 dark:bg-sonic-darker transition-colors duration-500">
@@ -272,39 +286,6 @@ const App: React.FC = () => {
             
             {/* --- Search and Filter Section --- */}
             <section>
-              <div className="flex flex-col md:flex-row md:items-center gap-6 mb-8">
-                <div className="flex-1 max-w-2xl relative group">
-                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-500 transition-colors" size={20} />
-                  <form onSubmit={handleSearch}>
-                    <input 
-                      type="text" 
-                      value={searchQuery} 
-                      onChange={e => setSearchQuery(e.target.value)} 
-                      placeholder="Explora ritmos, ciudades o países..." 
-                      className="w-full pl-14 pr-6 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all text-base font-medium shadow-sm" 
-                    />
-                  </form>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-black uppercase tracking-widest text-slate-400 mr-2 hidden sm:block">Filtro:</span>
-                  <div className="flex items-center gap-1 p-1 bg-slate-200/50 dark:bg-slate-800/50 rounded-2xl">
-                    {SEARCH_FILTERS.map(filter => (
-                      <button
-                        key={filter.id}
-                        onClick={() => setSearchType(filter.id as any)}
-                        className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${
-                          searchType === filter.id
-                            ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm'
-                            : 'text-slate-500 hover:bg-white/50 dark:hover:bg-slate-700/50'
-                        }`}
-                      >
-                        {filter.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
               {/* Quick Mood/Genre Buttons */}
               <div className="flex flex-wrap gap-3">
                 {QUICK_MOODS.map(mood => (
@@ -440,6 +421,7 @@ const App: React.FC = () => {
       {/* --- Footer --- */}
       <footer className="mt-20 py-8 border-t border-slate-200 dark:border-white/5 text-center text-sm text-slate-500 dark:text-slate-400">
         <p>&copy; {new Date().getFullYear()} SonicWave AI Radio. Todos los derechos reservados.</p>
+        <p className="mt-1 text-xs">Estaciones de radio provistas por la <a href="http://www.radio-browser.info/" target="_blank" rel="noopener noreferrer" className="text-cyan-500 hover:underline">Radio Browser API</a>.</p>
         <div className="mt-2 inline-flex items-center gap-2">
           <span>Creado por</span>
           <a 
@@ -512,7 +494,7 @@ const App: React.FC = () => {
       </div>
       
       {/* The global player bar */}
-      <PlayerBar currentStation={currentStation} isPlaying={isPlaying} onPlayPause={togglePlayPause} volume={volume} onVolumeChange={setVolume} isLoading={isLoading} audioRef={audioRef} />
+      <PlayerBar currentStation={currentStation} isPlaying={isPlaying} onPlayPause={togglePlayPause} onSkip={handleSkip} volume={volume} onVolumeChange={setVolume} isLoading={isLoading} audioRef={audioRef} />
     </div>
   );
 };

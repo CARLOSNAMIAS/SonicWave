@@ -17,6 +17,7 @@ interface PlayerBarProps {
   currentStation: RadioStation | null;
   isPlaying: boolean;
   onPlayPause: () => void;
+  onSkip: (direction: 'next' | 'previous') => void;
   volume: number;
   onVolumeChange: (val: number) => void;
   isLoading: boolean;
@@ -30,7 +31,7 @@ interface PlayerBarProps {
  * 2. An expandable, full-screen view with more details, primarily for mobile.
  * It displays the current station, playback controls, and volume controls.
  */
-const PlayerBar: React.FC<PlayerBarProps> = ({ currentStation, isPlaying, onPlayPause, volume, onVolumeChange, isLoading }) => {
+const PlayerBar: React.FC<PlayerBarProps> = ({ currentStation, isPlaying, onPlayPause, onSkip, volume, onVolumeChange, isLoading }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (!currentStation) return null;
@@ -41,7 +42,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ currentStation, isPlaying, onPlay
       <div className={`fixed inset-0 z-[70] bg-sonic-darker transition-all duration-700 ease-in-out transform ${isExpanded ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/10 to-transparent pointer-events-none"></div>
         <div className="h-full flex flex-col p-6 relative">
-          <button onClick={() => setIsExpanded(false)} className="self-center p-4 text-slate-400 hover:text-white transition-colors">
+          <button onClick={() => setIsExpanded(false)} className="self-center p-4 text-slate-400 hover:text-white transition-colors" title="Close player">
             <ChevronDown size={40} strokeWidth={1.5} />
           </button>
 
@@ -63,9 +64,11 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ currentStation, isPlaying, onPlay
             </div>
 
             <div className="flex items-center gap-12">
-              <button className="text-slate-500 hover:text-white transition-all transform active:scale-90"><SkipBack size={32} /></button>
+              <button type="button" onClick={() => onSkip('previous')} title="Skip Back" className="text-slate-500 hover:text-white transition-all transform active:scale-90"><SkipBack size={32} /></button>
               <button 
+                type="button"
                 onClick={onPlayPause} 
+                title={isPlaying ? "Pause" : "Play"}
                 className="w-20 h-20 sonic-gradient text-white rounded-full flex items-center justify-center shadow-xl shadow-cyan-500/20 hover:scale-105 active:scale-95 transition-all"
               >
                 {isLoading ? (
@@ -76,7 +79,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ currentStation, isPlaying, onPlay
                   <Play size={40} className="ml-2" fill="currentColor" strokeWidth={0} />
                 )}
               </button>
-              <button className="text-slate-500 hover:text-white transition-all transform active:scale-90"><SkipForward size={32} /></button>
+              <button type="button" onClick={() => onSkip('next')} title="Skip Forward" className="text-slate-500 hover:text-white transition-all transform active:scale-90"><SkipForward size={32} /></button>
             </div>
 
             <div className="w-full max-w-xs space-y-4">
@@ -85,7 +88,8 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ currentStation, isPlaying, onPlay
                 <input 
                   type="range" min="0" max="1" step="0.01" 
                   value={volume} onChange={e => onVolumeChange(parseFloat(e.target.value))} 
-                  className="flex-1 accent-cyan-400 h-1.5 rounded-full cursor-pointer bg-slate-800" 
+                  className="flex-1 accent-cyan-400 h-1.5 rounded-full cursor-pointer bg-slate-800"
+                  title="Volume control"
                 />
                 <Volume2 className="text-slate-500" size={20} />
               </div>
@@ -96,7 +100,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ currentStation, isPlaying, onPlay
 
       {/* Main Bar (Desktop/Mini) */}
       <div className="fixed bottom-0 left-0 right-0 z-[60] px-4 pb-4 sm:pb-6">
-        <div className="max-w-6xl mx-auto sonic-glass border border-white/10 dark:border-white/5 rounded-3xl shadow-2xl h-24 px-6 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto sonic-glass border border-white/10 dark:border-white/5 rounded-3xl shadow-2xl h-20 sm:h-24 px-4 sm:px-6 flex items-center justify-between">
           <div className="flex items-center gap-4 flex-1 min-w-0">
             <div 
               className="w-14 h-14 rounded-xl overflow-hidden bg-slate-800 cursor-pointer shadow-lg group relative" 
@@ -120,29 +124,31 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ currentStation, isPlaying, onPlay
 
           <div className="flex flex-col items-center flex-1 space-y-2">
             <div className="flex items-center gap-8">
-              <button className="text-slate-400 hover:text-cyan-500 transition-colors hidden sm:block"><SkipBack size={20} /></button>
-              <button 
-                onClick={onPlayPause} 
-                className={`
-                  w-12 h-12 rounded-full flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-lg
-                  ${isPlaying ? 'bg-white dark:bg-slate-100 text-slate-900' : 'sonic-gradient text-white'}
-                `}
-              >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-slate-900/20 border-t-slate-900 rounded-full animate-spin"></div>
-                ) : isPlaying ? (
-                  <Pause size={24} fill="currentColor" strokeWidth={0} />
-                ) : (
-                  <Play size={24} className="ml-1" fill="currentColor" strokeWidth={0} />
-                )}
-              </button>
-              <button className="text-slate-400 hover:text-cyan-500 transition-colors hidden sm:block"><SkipForward size={20} /></button>
-            </div>
+                <button type="button" onClick={() => onSkip('previous')} title="Skip Back" className="text-slate-400 hover:text-cyan-500 transition-colors hidden sm:block"><SkipBack size={20} /></button>
+                <button 
+                  type="button"
+                  onClick={onPlayPause} 
+                  title={isPlaying ? "Pause" : "Play"}
+                  className={`
+                    w-12 h-12 rounded-full flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-lg
+                    ${isPlaying ? 'bg-white dark:bg-slate-100 text-slate-900' : 'sonic-gradient text-white'}
+                  `}
+                >
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-slate-900/20 border-t-slate-900 rounded-full animate-spin"></div>
+                  ) : isPlaying ? (
+                    <Pause size={24} fill="currentColor" strokeWidth={0} />
+                  ) : (
+                    <Play size={24} className="ml-1" fill="currentColor" strokeWidth={0} />
+                  )}
+                </button>
+                <button type="button" onClick={() => onSkip('next')} title="Skip Forward" className="text-slate-400 hover:text-cyan-500 transition-colors hidden sm:block"><SkipForward size={20} /></button>
+              </div>
             
             <div className="hidden sm:flex items-center gap-3 w-full max-w-[280px]">
                <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
                <div className="flex-1 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div className={`h-full sonic-gradient transition-all duration-300 ${isPlaying ? 'opacity-100' : 'opacity-30'}`} style={{ width: '100%' }}></div>
+                  <div className={`w-full h-full sonic-gradient transition-all duration-300 ${isPlaying ? 'opacity-100' : 'opacity-30'}`}></div>
                </div>
             </div>
           </div>
@@ -153,10 +159,13 @@ const PlayerBar: React.FC<PlayerBarProps> = ({ currentStation, isPlaying, onPlay
               <input 
                 type="range" min="0" max="1" step="0.01" 
                 value={volume} onChange={e => onVolumeChange(parseFloat(e.target.value))} 
-                className="w-full accent-cyan-500 h-1 cursor-pointer bg-slate-200 dark:bg-slate-800 rounded-full" 
+                className="w-full accent-cyan-500 h-1 cursor-pointer bg-slate-200 dark:bg-slate-800 rounded-full"
+                title="Volume control"
               />
             </div>
             <button 
+              type="button"
+              title="Expand player"
               className="p-2 text-slate-400 hover:text-white bg-slate-100 dark:bg-slate-800/50 rounded-xl lg:hidden" 
               onClick={() => setIsExpanded(true)}
             >
