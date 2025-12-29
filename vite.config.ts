@@ -8,6 +8,13 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        proxy: {
+          '/api/stations': {
+            target: 'https://de2.api.radio-browser.info',
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/api\/stations/, '/json/stations/search'),
+          },
+        },
       },
       plugins: [react()],
       define: {

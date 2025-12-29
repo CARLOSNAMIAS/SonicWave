@@ -65,7 +65,7 @@ const AIDJModal: React.FC<AIDJModalProps> = ({ isOpen, onClose, onSubmit, isProc
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
       <div className="absolute inset-0 bg-sonic-darker/90 backdrop-blur-xl animate-in fade-in duration-300" onClick={onClose}></div>
       
-      <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-[0_0_100px_-10px_rgba(34,211,238,0.2)] overflow-hidden animate-in zoom-in-95 duration-300 border border-white/10">
+      <div className="relative bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-[0_0_100px_-10px_rgba(34,211,238,0.2)] overflow-hidden animate-in zoom-in-95 duration-300 border border-white/10">
         <div className="p-8 bg-gradient-to-b from-cyan-500/10 to-transparent flex justify-between items-center border-b border-black/5 dark:border-white/5">
           <div className="flex items-center gap-4">
             <div className="sonic-gradient p-2.5 rounded-xl shadow-lg">
