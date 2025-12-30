@@ -29,6 +29,11 @@ export const useAudioPlayer = () => {
   // Ref to the underlying <audio> element.
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Web Audio API refs
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+
   // Effect to update the audio element's volume and persist it to localStorage.
   useEffect(() => {
     if (audioRef.current) {
@@ -50,7 +55,7 @@ export const useAudioPlayer = () => {
     }
 
     const streamUrl = currentStation.url_resolved || currentStation.url;
-    
+
     // Change the source only if it's different from the current one.
     if (audio.src !== streamUrl) {
       setPlaybackError(null);
@@ -75,16 +80,58 @@ export const useAudioPlayer = () => {
   }, [currentStation, isPlaying]);
 
   /**
+   * Initializes the AudioContext and AnalyserNode.
+   * This MUST be called in response to a user gesture (like clicking play).
+   */
+  const initAudioContext = () => {
+    if (audioContextRef.current || !audioRef.current) return;
+
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioContextClass();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256; // Balanced resolution
+
+      const source = ctx.createMediaElementSource(audioRef.current);
+      source.connect(analyser);
+      analyser.connect(ctx.destination);
+
+      audioContextRef.current = ctx;
+      analyserRef.current = analyser;
+      sourceRef.current = source;
+    } catch (err) {
+      console.error("Failed to initialize AudioContext:", err);
+    }
+  };
+
+  /**
+   * Toggles the play/pause state of the currently loaded station.
+   * Does nothing if no station is loaded.
+   */
+  const togglePlayPause = () => {
+    if (currentStation) {
+      initAudioContext();
+      if (audioContextRef.current?.state === 'suspended') {
+        audioContextRef.current.resume();
+      }
+      setIsPlaying(prev => !prev);
+    }
+  }
+
+  /**
    * Handles playing a new station or toggling the current one.
    * @param station The `RadioStation` to play.
    */
   const handlePlayPause = (station: RadioStation) => {
     setPlaybackError(null);
+    initAudioContext();
+    if (audioContextRef.current?.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
+
     if (currentStation?.stationuuid === station.stationuuid) {
-      // If it's the same station, just toggle the play state.
       setIsPlaying(prev => !prev);
     } else {
-      // If it's a new station, set it and start playing.
       setCurrentStation(station);
       setIsPlaying(true);
     }
@@ -96,17 +143,7 @@ export const useAudioPlayer = () => {
   const stopPlayer = () => {
     setIsPlaying(false);
     setCurrentStation(null);
-  }
-
-  /**
-   * Toggles the play/pause state of the currently loaded station.
-   * Does nothing if no station is loaded.
-   */
-  const togglePlayPause = () => {
-    if (currentStation) {
-      setIsPlaying(prev => !prev);
-    }
-  }
+  };
 
   return {
     audioRef,
@@ -120,6 +157,7 @@ export const useAudioPlayer = () => {
     setVolume,
     setIsLoading,
     togglePlayPause,
-    stopPlayer
+    stopPlayer,
+    analyserRef
   };
 };

@@ -68,6 +68,7 @@ const App: React.FC = () => {
     setVolume,
     setIsLoading,
     togglePlayPause,
+    analyserRef
   } = useAudioPlayer();
 
   // State for radio station data
@@ -90,8 +91,23 @@ const App: React.FC = () => {
   // Mobile menu state
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // Search description state
+  const [searchTitle, setSearchTitle] = useState('Descubre más ondas');
+
+  // Floating AI DJ button position state (for mobile drag functionality)
+  const [fabPosition, setFabPosition] = useState(() => {
+    // Initialize with random position on first load
+    const randomBottom = Math.floor(Math.random() * 40) + 20; // 20-60% from bottom
+    const randomRight = Math.floor(Math.random() * 20) + 5; // 5-25% from right
+    return { bottom: randomBottom, right: randomRight };
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
   // Ref for the horizontal country list for scrolling.
   const countryScrollRef = useRef<HTMLDivElement | null>(null);
+  // Ref for the main results section to scroll into view.
+  const resultsSectionRef = useRef<HTMLDivElement | null>(null);
 
   /**
    * Handles scrolling the popular countries list horizontally.
@@ -133,6 +149,7 @@ const App: React.FC = () => {
    */
   const loadInitialData = async () => {
     setIsFetching(true);
+    setSearchTitle('Explorando el mundo');
     const topData = await getTopStations();
 
     // Ensure custom Venezuelan stations aren't duplicated if they also appear in the top list.
@@ -145,22 +162,59 @@ const App: React.FC = () => {
   };
 
   /**
+   * Shuffles an array in place using the Fisher-Yates algorithm.
+   */
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[shuffled[i] as any] as any]; // Fix for TS in this context
+    }
+    return shuffled;
+  };
+
+  // Correction for the shuffle logic to be cleaner
+  const shuffle = <T,>(array: T[]): T[] => {
+    return array
+      .map(value => ({ value, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ value }) => value);
+  };
+
+  /**
    * Performs a station search using the radio service based on the provided filters.
    * @param filters - An object containing search criteria (e.g., tag, country, name).
+   * @param isAISearch - Whether the search was triggered by the AI assistant.
    */
-  const performSearch = async (filters: SearchFilters) => {
+  const performSearch = async (filters: SearchFilters, isAISearch: boolean = false) => {
     setIsFetching(true);
-    setAiReasoning(null); // Clear previous AI reasoning on new search.
+    if (!isAISearch) {
+      setAiReasoning(null); // Only clear AI reasoning on new manual searches.
+    }
     setAppError(null);
     const results = await searchStations(filters);
+
+    // Update the search title based on filters
+    if (filters.name) {
+      setSearchTitle(`Resultados para: ${filters.name}`);
+    } else if (filters.country) {
+      setSearchTitle(`Emisoras de ${filters.country}`);
+    } else if (filters.tag) {
+      // Capitalize tag for better display
+      const tagLabel = filters.tag.charAt(0).toUpperCase() + filters.tag.slice(1);
+      setSearchTitle(`Música ${tagLabel}`);
+    } else {
+      setSearchTitle('Descubre más ondas');
+    }
 
     // Special handling for Venezuela to ensure custom stations are always at the top.
     if (filters.country === 'Venezuela') {
       const customStationUUIDs = new Set(customVenezuelaStations.map(s => s.stationuuid));
       const filteredResults = results.filter(s => !customStationUUIDs.has(s.stationuuid));
-      setStations([...customVenezuelaStations, ...filteredResults]);
+      const finalResults = isAISearch ? shuffle(filteredResults) : filteredResults;
+      setStations([...customVenezuelaStations, ...finalResults]);
     } else {
-      setStations(results);
+      setStations(isAISearch ? shuffle(results) : results);
     }
 
     setView(ViewState.HOME); // Switch back to the home view to show results.
@@ -182,8 +236,17 @@ const App: React.FC = () => {
     try {
       const rec = await getRadioRecommendations(prompt);
       setAiReasoning(rec.reasoning); // Display the AI's reasoning.
-      setIsAIModalOpen(false);
-      await performSearch(rec.searchQuery); // Perform the search suggested by the AI.
+      // Set a title specific to AI search
+      setSearchTitle('Recomendaciones de tu DJ IA');
+      // Don't close the modal - let the chat component handle displaying the response
+      await performSearch(rec.searchQuery, true); // Perform the search suggested by the AI, passing true to preserve reasoning.
+      // Override the title again after performSearch because it sets its own
+      setSearchTitle('Recomendaciones de tu DJ IA');
+
+      // Scroll to results after a short delay to allow the UI to update
+      setTimeout(() => {
+        resultsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     } catch (error) {
       console.error("AI Request Error:", error);
       setAppError("El DJ de IA no está disponible en este momento.");
@@ -221,10 +284,63 @@ const App: React.FC = () => {
     handlePlayPause(nextStation);
   };
 
+  /**
+   * Handles the start of a touch drag on the floating AI DJ button.
+   * Records the initial touch position and current button position.
+   */
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setIsDragging(true);
+    setDragStart({
+      x: touch.clientX,
+      y: touch.clientY,
+    });
+  };
+
+  /**
+   * Handles touch movement while dragging the floating AI DJ button.
+   * Updates the button position based on finger movement.
+   */
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+
+    const touch = e.touches[0];
+    const deltaX = dragStart.x - touch.clientX;
+    const deltaY = touch.clientY - dragStart.y;
+
+    // Calculate new position as percentage of viewport
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    const newRight = fabPosition.right + (deltaX / viewportWidth) * 100;
+    const newBottom = fabPosition.bottom + (deltaY / viewportHeight) * 100;
+
+    // Constrain to viewport bounds (with some padding)
+    const constrainedRight = Math.max(5, Math.min(85, newRight));
+    const constrainedBottom = Math.max(15, Math.min(85, newBottom));
+
+    setFabPosition({
+      right: constrainedRight,
+      bottom: constrainedBottom,
+    });
+
+    setDragStart({
+      x: touch.clientX,
+      y: touch.clientY,
+    });
+  };
+
+  /**
+   * Handles the end of a touch drag on the floating AI DJ button.
+   */
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
   return (
     <div className="min-h-screen pb-40 bg-slate-50 dark:bg-sonic-darker transition-colors duration-500">
       {/* The single audio element controlled by the useAudioPlayer hook */}
-      <audio ref={audioRef} onWaiting={() => setIsLoading(true)} onPlaying={() => setIsLoading(false)} onCanPlay={() => setIsLoading(false)} />
+      <audio ref={audioRef} crossOrigin="anonymous" onWaiting={() => setIsLoading(true)} onPlaying={() => setIsLoading(false)} onCanPlay={() => setIsLoading(false)} />
 
       {/* --- Navigation Bar --- */}
       <nav className="sticky top-0 z-40 sonic-glass border-b border-black/5 dark:border-white/5 h-20">
@@ -241,8 +357,8 @@ const App: React.FC = () => {
 
           {/* Desktop Navigation Links */}
           <div className="hidden lg:flex items-center space-x-8">
-            <button onClick={() => setView(ViewState.HOME)} className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.HOME ? 'text-cyan-500' : 'text-slate-600 hover:text-cyan-500'}`}>Descubrir</button>
-            <button onClick={() => setView(ViewState.FAVORITES)} className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.FAVORITES ? 'text-cyan-500' : 'text-slate-600 hover:text-cyan-500'}`}>Favoritos</button>
+            <button onClick={() => setView(ViewState.HOME)} className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.HOME ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-600 hover:text-cyan-500'}`}>Descubrir</button>
+            <button onClick={() => setView(ViewState.FAVORITES)} className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.FAVORITES ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-600 hover:text-cyan-500'}`}>Favoritos</button>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -251,12 +367,12 @@ const App: React.FC = () => {
               type="button"
               title="Abrir menú"
               onClick={() => setIsMenuOpen(true)}
-              className="lg:hidden w-10 h-10 flex items-center justify-center text-slate-400 hover:text-cyan-500 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl transition-all"
+              className="lg:hidden w-10 h-10 flex items-center justify-center text-slate-700 dark:text-slate-400 hover:text-cyan-500 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-transparent rounded-xl transition-all shadow-sm hover:shadow-md"
             >
               <Menu size={20} />
             </button>
             {/* Theme Toggle Button */}
-            <button onClick={toggleTheme} className="hidden sm:flex w-10 h-10 items-center justify-center text-slate-400 hover:text-cyan-500 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl transition-all">
+            <button onClick={toggleTheme} className="hidden sm:flex w-10 h-10 items-center justify-center text-slate-700 dark:text-slate-400 hover:text-cyan-500 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-transparent rounded-xl transition-all shadow-sm hover:shadow-md">
               {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             {/* AI DJ Modal Trigger */}
@@ -296,7 +412,7 @@ const App: React.FC = () => {
                   <button
                     key={mood.id}
                     onClick={() => performSearch({ tag: mood.tag })}
-                    className="flex items-center gap-2 bg-white dark:bg-slate-900 hover:bg-cyan-500 hover:text-white dark:hover:bg-cyan-500 px-6 py-3 rounded-2xl transition-all border border-slate-200 dark:border-white/5 shadow-sm text-sm font-black uppercase tracking-widest active:scale-95"
+                    className="flex items-center gap-2 bg-white dark:bg-slate-900 text-slate-700 dark:text-white hover:bg-cyan-500 hover:text-white dark:hover:bg-cyan-500 px-6 py-3 rounded-2xl transition-all border border-slate-200 dark:border-white/5 shadow-sm text-sm font-black uppercase tracking-widest active:scale-95"
                   >
                     {mood.icon} {mood.label}
                   </button>
@@ -348,7 +464,12 @@ const App: React.FC = () => {
                     <Sparkles size={20} fill="currentColor" />
                     <span className="text-[11px] font-black uppercase tracking-[0.2em]">Selección de la IA</span>
                   </div>
-                  <p className="text-2xl font-bold dark:text-white leading-tight tracking-tight">{aiReasoning}</p>
+                  <p
+                    key={aiReasoning}
+                    className="text-2xl font-bold dark:text-white leading-tight tracking-tight animate-in fade-in slide-in-from-bottom-3 duration-700"
+                  >
+                    {aiReasoning}
+                  </p>
                 </div>
               </div>
             )}
@@ -356,7 +477,7 @@ const App: React.FC = () => {
         )}
 
         {/* === FEATURED STATIONS (Example Section) === */}
-        {view === ViewState.HOME && featuredStations.length > 0 && !searchQuery && (
+        {view === ViewState.HOME && featuredStations.length > 0 && (
           <section className="mt-16 space-y-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -382,10 +503,13 @@ const App: React.FC = () => {
         )}
 
         {/* --- Main Station List (Home or Favorites) --- */}
-        <section className="mt-20 space-y-10">
+        <section ref={resultsSectionRef} className="mt-20 space-y-10">
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/5 pb-4">
-            <h3 className="text-xl font-black dark:text-white tracking-tight">
-              {view === ViewState.FAVORITES ? 'Tus favoritos' : 'Descubre más ondas'}
+            <h3
+              key={view === ViewState.FAVORITES ? 'favorites' : searchTitle}
+              className="text-xl font-black dark:text-white tracking-tight animate-in fade-in slide-in-from-bottom-2 duration-500"
+            >
+              {view === ViewState.FAVORITES ? 'Tus favoritos' : searchTitle}
             </h3>
             <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
               {displayedStations.length} Emisoras
@@ -441,7 +565,7 @@ const App: React.FC = () => {
       </footer>
 
       {/* --- Modals and Overlays --- */}
-      <AIDJModal isOpen={isAIModalOpen} onClose={() => setIsAIModalOpen(false)} onSubmit={handleAIRequest} isProcessing={aiProcessing} />
+      <AIDJModal isOpen={isAIModalOpen} onClose={() => setIsAIModalOpen(false)} onSubmit={handleAIRequest} isProcessing={aiProcessing} aiReasoning={aiReasoning} />
 
       {/* Mobile Off-canvas Menu */}
       <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
@@ -483,14 +607,25 @@ const App: React.FC = () => {
       </div>
 
       {/* Floating Action Button for AI DJ on mobile */}
-      <div className="lg:hidden fixed bottom-28 right-6 z-40">
+      <div
+        className="lg:hidden fixed z-40 touch-none"
+        style={{
+          bottom: `${fabPosition.bottom}%`,
+          right: `${fabPosition.right}%`,
+          transform: 'translate(50%, 50%)',
+          transition: isDragging ? 'none' : 'all 0.3s ease',
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <span className="relative flex h-14 w-14">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 ${isDragging ? 'opacity-0' : ''}`}></span>
           <button
             type="button"
             title="Abrir asistente de IA DJ"
-            onClick={() => setIsAIModalOpen(true)}
-            className="relative inline-flex w-14 h-14 sonic-gradient rounded-full items-center justify-center shadow-2xl shadow-cyan-500/30 active:scale-95 transition-transform"
+            onClick={() => !isDragging && setIsAIModalOpen(true)}
+            className={`relative inline-flex w-14 h-14 sonic-gradient rounded-full items-center justify-center shadow-2xl shadow-cyan-500/30 transition-transform ${isDragging ? 'scale-110' : 'active:scale-95'}`}
           >
             <Sparkles size={24} fill="currentColor" className="text-white" />
           </button>
@@ -498,7 +633,7 @@ const App: React.FC = () => {
       </div>
 
       {/* The global player bar */}
-      <PlayerBar currentStation={currentStation} isPlaying={isPlaying} onPlayPause={togglePlayPause} onSkip={handleSkip} volume={volume} onVolumeChange={setVolume} isLoading={isLoading} audioRef={audioRef} />
+      <PlayerBar currentStation={currentStation} isPlaying={isPlaying} onPlayPause={togglePlayPause} onSkip={handleSkip} volume={volume} onVolumeChange={setVolume} isLoading={isLoading} audioRef={audioRef} analyser={analyserRef.current} />
     </div>
   );
 };

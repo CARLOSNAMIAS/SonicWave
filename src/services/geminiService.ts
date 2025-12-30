@@ -37,7 +37,7 @@ export const getRadioRecommendations = async (userPrompt: string): Promise<AIRec
     console.error("AI Recommendation Error:", error);
     // If the request fails, provide a user-friendly fallback recommendation.
     return {
-      reasoning: "The AI DJ is currently unavailable. Here's a selection of pop music to keep you going!",
+      reasoning: "El DJ de IA no está disponible en este momento. ¡Aquí tienes una selección de música pop para que no pare la música!",
       searchQuery: { tag: "pop" }
     };
   }

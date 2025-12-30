@@ -46,65 +46,69 @@ export default async function handler(
     // This system instruction is the "master prompt" that defines the AI's persona, task, and output format.
     // It's a critical part of ensuring reliable and structured responses from the model.
     const systemInstruction = `
-      You are an expert music curator and radio DJ. 
-      Your goal is to translate a user's natural language request (mood, genre, activity, or specific taste) 
-      into search parameters compatible with the Radio Browser API.
+      Eres un experto curador musical y DJ de radio de clase mundial. 
+      Tu objetivo es traducir la solicitud del usuario (estado de ánimo, género, actividad o gusto específico) 
+      en parámetros de búsqueda compatibles con la Radio Browser API.
       
-      The Radio Browser API supports searching by: 'name', 'country', 'tag' (genre).
+      La Radio Browser API soporta búsquedas por: 'tag' (género), 'country' (país) y 'name' (nombre de la emisora).
       
-      Analyze the user's request and provide:
-      1. A short, fun reasoning for your choice.
-      2. A structured object with 'tag', 'country', or 'name' to perform the search.
+      REGLAS CRÍTICAS PARA LA VARIEDAD:
+      1. No te limites a géneros genéricos. Si el usuario pide algo relajante, alterna entre 'lofi', 'ambient', 'chillout', 'jazz', 'classical' o 'nature'.
+      2. Sé específico con los subgéneros si es posible (ej. 'synthwave' en lugar de 'electronic', 'reggaeton' en lugar de 'latino').
+      3. Varía los países si la solicitud es global (ej. 'France', 'Japan', 'Brazil', 'United Kingdom').
+      4. Si el usuario repite una idea, intenta ofrecer un ángulo diferente (ej. si pide rock, prueba con 'rockabilly', 'grunge' o 'indie rock').
+      5. Responde SIEMPRE en español.
       
-      Example:
-      User: "I want to relax while coding"
-      Output: { "reasoning": "Here are some low-fidelity beats to help you focus.", "searchQuery": { "tag": "lofi" } }
+      Analiza la solicitud y proporciona:
+      1. Un razonamiento corto, divertido y profesional en español para tu elección.
+      2. Un objeto estructurado con 'tag', 'country', o 'name' para realizar la búsqueda.
       
-      User: "News from Spain"
-      Output: { "reasoning": "Catching up on current events from Spain.", "searchQuery": { "country": "Spain", "tag": "news" } }
+      Ejemplo:
+      Usuario: "Quiero relajarme mientras programo"
+      Resultado: { "reasoning": "He seleccionado unos ritmos lofi y ambient que te ayudarán a mantener el foco absoluto.", "searchQuery": { "tag": "lofi" } }
     `;
 
     const genAIResponse = await ai.models.generateContent({
-        model: "gemini-3-flash-preview", // A fast and capable model suitable for this task.
-        contents: userPrompt,
-        config: {
-          systemInstruction: systemInstruction,
-          responseMimeType: "application/json", // Enforce JSON output.
-          // Define the exact JSON schema the AI's response must follow.
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              reasoning: {
-                type: Type.STRING,
-                description: "The AI's reasoning for the recommendation."
-              },
-              searchQuery: {
-                type: Type.OBJECT,
-                properties: {
-                  tag: { type: Type.STRING },
-                  country: { type: Type.STRING },
-                  name: { type: Type.STRING },
-                },
-                description: "The search query for the Radio Browser API."
-              },
-              suggestedStationNames: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING },
-                description: "A list of 3 specific famous station names if applicable, otherwise empty."
-              }
+      model: "gemini-3-flash-preview", // A fast and capable model suitable for this task.
+      contents: userPrompt,
+      config: {
+        systemInstruction: systemInstruction,
+        responseMimeType: "application/json", // Enforce JSON output.
+        // Define the exact JSON schema the AI's response must follow.
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            reasoning: {
+              type: Type.STRING,
+              description: "The AI's reasoning for the recommendation."
             },
-            required: ["reasoning", "searchQuery"],
+            searchQuery: {
+              type: Type.OBJECT,
+              properties: {
+                tag: { type: Type.STRING },
+                country: { type: Type.STRING },
+                name: { type: Type.STRING },
+              },
+              description: "The search query for the Radio Browser API."
+            },
+            suggestedStationNames: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: "A list of 3 specific famous station names if applicable, otherwise empty."
+            }
           },
+          required: ["reasoning", "searchQuery"],
         },
-      });
+      },
+    });
 
     const text = genAIResponse.text;
     if (!text) {
-        throw new Error("No response from AI");
+      throw new Error("No response from AI");
     }
 
     const result = JSON.parse(text) as AIRecommendation;
-    
+
     // Send the successful response back to the client
     return response.status(200).json(result);
 
@@ -112,7 +116,7 @@ export default async function handler(
     console.error("Gemini AI Error:", error);
     // In case of an error with the AI service, send a structured error and a fallback recommendation.
     const fallback: AIRecommendation = {
-      reasoning: "I couldn't reach the AI DJ, but here is some pop music!",
+      reasoning: "No he podido contactar con mi asistente de IA, ¡pero aquí tienes algo de pop para animar el ambiente!",
       searchQuery: { tag: "pop" }
     };
     return response.status(500).json(fallback);
