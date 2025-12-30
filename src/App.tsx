@@ -544,23 +544,89 @@ const App: React.FC = () => {
             </div>
           )}
         </section>
+
+        {/* --- About Section (SEO / AdSense Optimization) --- */}
+        <section className="mt-28 py-16 border-t border-slate-200 dark:border-white/5">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <h2 className="text-3xl font-black dark:text-white tracking-tight">SonicWave: La Revolución de la Radio con IA</h2>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                SonicWave AI Radio no es solo un agregador de emisoras; es tu portal inteligente al universo sonoro global. Utilizando tecnología de vanguardia y el poder de <strong>Google Gemini AI</strong>, nuestro asistente aprende de tus gustos para ofrecerte recomendaciones musicales precisas y descubrimientos que cruzan fronteras.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <div className="px-4 py-2 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl border border-black/5 dark:border-white/5">
+                  <span className="text-xs font-black uppercase tracking-widest text-cyan-500">Mundial</span>
+                  <p className="text-sm font-bold dark:text-slate-200">+30,000 Emisoras</p>
+                </div>
+                <div className="px-4 py-2 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl border border-black/5 dark:border-white/5">
+                  <span className="text-xs font-black uppercase tracking-widest text-cyan-500">Inteligente</span>
+                  <p className="text-sm font-bold dark:text-slate-200">DJ Recomendador IA</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 p-8 rounded-3xl border border-cyan-500/20">
+              <h3 className="text-xl font-bold dark:text-white mb-4">¿Por qué elegirnos?</h3>
+              <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+                <li className="flex gap-3">
+                  <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
+                    <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
+                  </div>
+                  <span>Acceso gratuito a miles de géneros: desde Jazz Manouche hasta K-Pop.</span>
+                </li>
+                <li className="flex gap-3">
+                  <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
+                    <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
+                  </div>
+                  <span>Interfaz premium con visualizador rítmico en tiempo real.</span>
+                </li>
+                <li className="flex gap-3">
+                  <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
+                    <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
+                  </div>
+                  <span>Privacidad garantizada y sin registros complicados.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
       </main>
 
-      {/* --- Footer --- */}
-      <footer className="mt-20 py-8 border-t border-slate-200 dark:border-white/5 text-center text-sm text-slate-500 dark:text-slate-400">
-        <p>&copy; {new Date().getFullYear()} SonicWave AI Radio. Todos los derechos reservados.</p>
-        <p className="mt-1 text-xs">Estaciones de radio provistas por la <a href="http://www.radio-browser.info/" target="_blank" rel="noopener noreferrer" className="text-cyan-500 hover:underline">Radio Browser API</a>.</p>
-        <div className="mt-2 inline-flex items-center gap-2">
-          <span>Creado por</span>
-          <a
-            href="https://github.com/CARLOSNAMIAS"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-1 bg-slate-200/50 dark:bg-slate-800/50 rounded-lg hover:bg-slate-300/70 dark:hover:bg-slate-700/70 transition-colors"
-          >
-            <Github size={16} className="text-slate-700 dark:text-slate-300" />
-            <span className="font-bold text-slate-800 dark:text-slate-200">CARLOSNAMIAS</span>
-          </a>
+      {/* --- Footer (AdSense Compliant) --- */}
+      <footer className="mt-20 py-12 border-t border-slate-200 dark:border-white/5 bg-slate-100/30 dark:bg-black/20">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
+          <div className="col-span-1 md:col-span-2 space-y-4">
+            <h4 className="text-2xl font-black dark:text-white tracking-widest uppercase">SonicWave</h4>
+            <p className="text-slate-500 dark:text-slate-400 max-w-sm">
+              Sintonizando el futuro a través de la inteligencia artificial. Tu compañero musical definitivo para descubrir ondas de todo el mundo.
+            </p>
+            <div className="pt-4 flex items-center gap-4">
+              <a href="https://github.com/CARLOSNAMIAS" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-cyan-500 transition-colors">
+                <Github size={24} />
+              </a>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h5 className="font-black text-xs uppercase tracking-widest text-cyan-500">Información</h5>
+            <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
+              <li><a href="/privacy.html" className="hover:text-cyan-500 transition-colors">Privacidad</a></li>
+              <li><a href="/terms.html" className="hover:text-cyan-500 transition-colors">Términos</a></li>
+              <li><a href="/cookies.html" className="hover:text-cyan-500 transition-colors">Cookies</a></li>
+            </ul>
+          </div>
+
+          <div className="space-y-4">
+            <h5 className="font-black text-xs uppercase tracking-widest text-cyan-500">Soporte</h5>
+            <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
+              <li><a href="https://github.com/CARLOSNAMIAS" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-500 transition-colors">Contacto</a></li>
+              <li><a href="http://www.radio-browser.info/" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-500 transition-colors">API Radio</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-6 mt-12 pt-8 border-t border-slate-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+          <p>&copy; {new Date().getFullYear()} SonicWave AI Radio. Transmitiendo con pasión.</p>
+          <p className="italic">Disclaimer: SonicWave es un agregador que no aloja los flujos de audio directamente.</p>
         </div>
       </footer>
 

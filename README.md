@@ -1,20 +1,67 @@
+# 📻 SonicWave AI Radio
+
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <img src="public/portada1.png" alt="SonicWave Hero" width="100%" style="border-radius: 20px; margin-bottom: 20px;">
 </div>
 
-# Run and deploy your AI Studio app.
+## 🌟 Sintonizando el Futuro con IA
 
-This contains everything you need to run your app locally.
+**SonicWave** es una experiencia de audio inmersiva que combina lo mejor de la radio global con la inteligencia artificial de última generación. No solo escuchas música; descubres ondas sonoras de todo el planeta guiado por un DJ inteligente impulsado por **Google Gemini**.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1KINOAwi3VaO1Db-mrVJZFkDgNUdm59OQ
+### 📸 Galería de la Interfaz
+<div align="center">
+  <img src="public/portada2.png" width="49%" style="border-radius: 10px;">
+  <img src="public/portada3.png" width="49%" style="border-radius: 10px;">
+</div>
 
-## Run Locally
+---
 
-**Prerequisites:**  Node.js
+### ✨ Características Principales
 
+- **🤖 AI DJ con Gemini**: Pídele cualquier cosa al chatbot y deja que la IA busque emisoras por país, género o estado de ánimo. ¡Resultados dinámicos y explicados en español!
+- **📊 Visualizador en Tiempo Real**: Siente el ritmo con un visualizador de espectro de audio profesional integrado en el reproductor.
+- **🌍 +30.000 Emisoras**: Conexión directa con la Radio Browser API para acceder a radios de todos los continentes.
+- **🎨 Diseño Premium "Vibe"**: Interfaz moderna con modo oscuro, degradados cian/indigo, animaciones fluidas y una experiencia móvil optimizada.
+- **📱 PWA Ready**: Instala la aplicación en tu dispositivo móvil o escritorio para un acceso rápido y fluido.
+- **💰 AdSense Optimized**: Estructura lista para monetización con páginas legales, `ads.txt` y alta densidad de contenido SEO.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+
+### 🛠️ Stack Tecnológico
+
+- **Framework**: React 19 + Vite
+- **Estilos**: Tailwind CSS (Glassmorphism & Custom Animations)
+- **IA**: Google Gemini Pro API
+- **Audio**: Web Audio API (AnalyserNode)
+- **Despliegue**: Vercel Serverless Functions
+
+---
+
+### 🚀 Instalación Local
+
+1. **Clonar el repositorio**:
+   ```bash
+   git clone https://github.com/CARLOSNAMIAS/SonicWave.git
+   cd SonicWave
+   ```
+
+2. **Instalar dependencias**:
+   ```bash
+   npm install
+   ```
+
+3. **Configurar variables de entorno**:
+   Crea un archivo `.env.local` y añade tu clave de Gemini:
+   ```env
+   GEMINI_API_KEY=tu_clave_aqui
+   ```
+
+4. **Ejecutar en modo desarrollo**:
+   ```bash
+   npm run dev
+   ```
+
+---
+
+### ⚖️ Licencia y Copyright
+SonicWave es un agregador de contenido. Los derechos de las transmisiones pertenecen a sus respectivas emisoras. Creado con pasión por [CARLOSNAMIAS](https://github.com/CARLOSNAMIAS).
