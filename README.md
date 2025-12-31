@@ -23,7 +23,7 @@
 - **🌍 +30.000 Emisoras**: Conexión directa con la Radio Browser API para acceder a radios de todos los continentes.
 - **🎨 Diseño Premium "Vibe"**: Interfaz moderna con modo oscuro, degradados cian/indigo, animaciones fluidas y una experiencia móvil optimizada.
 - **📱 PWA Ready**: Instala la aplicación en tu dispositivo móvil o escritorio para un acceso rápido y fluido.
-- **💰 AdSense Optimized**: Estructura lista para monetización con páginas legales, `ads.txt` y alta densidad de contenido SEO.
+
 
 ---
 
@@ -64,4 +64,4 @@
 ---
 
 ### ⚖️ Licencia y Copyright
-SonicWave es un agregador de contenido. Los derechos de las transmisiones pertenecen a sus respectivas emisoras. Creado con pasión por [CARLOSNAMIAS](https://github.com/CARLOSNAMIAS).
+SonicWave es un agregador de contenido. Los derechos de las transmisiones pertenecen a sus respectivas emisoras. Creado por [CARLOSNAMIAS](https://github.com/CARLOSNAMIAS).

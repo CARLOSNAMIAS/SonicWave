@@ -64,6 +64,7 @@
             },
             animation: {
               "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+              "bounce-slow": "bounceSlow 3s ease-in-out infinite",
               "sound-wave": "soundWave 1.2s ease-in-out infinite",
               shimmer: "shimmer 2s linear infinite",
             },
@@ -71,6 +72,10 @@
               soundWave: {
                 "0%, 100%": { height: "20%" },
                 "50%": { height: "100%" },
+              },
+              bounceSlow: {
+                "0%, 100%": { transform: "translateY(-5%)" },
+                "50%": { transform: "translateY(0)" },
               },
               shimmer: {
                 "0%": { backgroundPosition: "-200% 0" },
@@ -118,6 +123,22 @@
       .scrollbar-hide::-webkit-scrollbar {
         display: none;
       }
+      .scale-110 {
+        transform: scale(1.1);
+      }
+
+      /* Estilos críticos para el Splash Screen (Carga instantánea) */
+      #initial-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #020617; /* slate-950 */
+        transition: all 0.7s ease-in-out;
+      }
     </style>
     <script type="importmap">
       {
@@ -140,6 +161,29 @@
   <body
     class="bg-slate-50 text-slate-900 dark:bg-sonic-darker dark:text-slate-100 selection:bg-cyan-500/30"
   >
+    <!-- Splash Screen Nativo -->
+    <div id="initial-splash">
+      <div class="relative flex flex-col items-center">
+        <!-- Resplandor animado -->
+        <div class="absolute -inset-8 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+        
+        <div class="relative sonic-gradient p-6 rounded-[2.5rem] shadow-2xl shadow-cyan-500/40 animate-bounce-slow">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a8 8 0 0 1 0 8.4"/><path d="M19.8 4.2a12 12 0 0 1 0 15.6"/><path d="M7.8 16.2a8 8 0 0 1 0-8.4"/><path d="M4.2 19.8a12 12 0 0 1 0-15.6"/></svg>
+        </div>
+        
+        <div class="mt-10 text-center space-y-2">
+          <h1 class="text-4xl font-black text-white tracking-tighter uppercase">
+            Sonic<span class="text-cyan-500">Wave</span>
+          </h1>
+          <div class="flex items-center justify-center gap-1">
+            <div class="w-1.5 h-1.5 bg-cyan-500/50 rounded-full animate-pulse"></div>
+            <div class="w-1.5 h-1.5 bg-cyan-500/50 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+            <div class="w-1.5 h-1.5 bg-cyan-500/50 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
 

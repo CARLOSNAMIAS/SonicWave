@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { RadioStation } from '@/types';
-import { Play, Pause, Volume2, VolumeX, SkipBack, SkipForward, ChevronDown, ChevronUp, Music2, Maximize2, Activity } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, SkipBack, SkipForward, ChevronDown, ChevronUp, Music2, Maximize2, Activity, Heart } from 'lucide-react';
 import AudioVisualizer from './AudioVisualizer';
 
 /**
@@ -24,6 +24,8 @@ interface PlayerBarProps {
   isLoading: boolean;
   audioRef: React.RefObject<HTMLAudioElement | null>;
   analyser: AnalyserNode | null;
+  isFavorite: boolean;
+  onToggleFavorite: (station: RadioStation) => void;
 }
 
 /**
@@ -41,7 +43,9 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
   volume,
   onVolumeChange,
   isLoading,
-  analyser
+  analyser,
+  isFavorite,
+  onToggleFavorite
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -57,57 +61,83 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
             <ChevronDown size={40} strokeWidth={1.5} />
           </button>
 
-          <div className="flex-1 flex flex-col items-center justify-center space-y-8 sm:space-y-12 py-4">
-            <div className={`w-64 h-64 sm:w-80 sm:h-80 rounded-3xl overflow-hidden shadow-[0_32px_64px_-12px_rgba(34,211,238,0.3)] transition-all duration-1000 transform ${isPlaying ? 'scale-100 rotate-0' : 'scale-90 rotate-2 opacity-50'}`}>
+          <div className="flex-1 flex flex-col items-center justify-center space-y-4 sm:space-y-12 py-2">
+            <div className={`w-48 h-48 sm:w-80 sm:h-80 rounded-3xl overflow-hidden shadow-[0_32px_64px_-12px_rgba(34,211,238,0.3)] transition-all duration-1000 transform ${isPlaying ? 'scale-100 rotate-0' : 'scale-90 rotate-2 opacity-50'}`}>
               <img
-                src={currentStation.favicon || `https://picsum.photos/600/600?radio=${currentStation.stationuuid}`}
+                src={currentStation.favicon || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentStation.name)}&background=0D9488&color=fff&size=512&font-size=0.33&bold=true`}
                 alt={currentStation.name}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentStation.name)}&background=0D9488&color=fff&size=512&font-size=0.33&bold=true`;
+                }}
               />
             </div>
 
-            <div className="w-full max-w-sm text-center space-y-4">
-              <h2 className="text-3xl font-black text-white tracking-tight mb-2 truncate px-4">{currentStation.name}</h2>
+            <div className="w-full max-w-sm text-center space-y-2">
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-1 truncate px-4">{currentStation.name}</h2>
               <div className="flex items-center justify-center gap-2">
-                <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase tracking-widest rounded">Live</span>
-                <p className="text-slate-400 font-bold text-sm tracking-wide">{currentStation.country} • {currentStation.tags?.split(',')[0]}</p>
+                <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-400 text-[9px] font-black uppercase tracking-widest rounded">Live</span>
+                <p className="text-slate-400 font-bold text-xs sm:text-sm tracking-wide">{currentStation.country} • {currentStation.tags?.split(',')[0]}</p>
               </div>
 
-              {/* Main Visualizer in Expanded Mode */}
-              <div className="h-20 sm:h-24 w-full px-8 mt-4 sm:mt-8">
-                <AudioVisualizer analyser={analyser} isPlaying={isPlaying} bars={48} height={100} />
+              {/* Main Visualizer in Expanded Mode - Reduced height and margin */}
+              <div className="h-12 sm:h-24 w-full px-8 mt-2 sm:mt-8">
+                <AudioVisualizer analyser={analyser} isPlaying={isPlaying} bars={32} height={60} />
               </div>
             </div>
 
-            <div className="flex items-center gap-12">
-              <button type="button" onClick={() => onSkip('previous')} title="Skip Back" className="text-slate-500 hover:text-white transition-all transform active:scale-90"><SkipBack size={32} /></button>
+            <div className="flex items-center gap-8 sm:gap-12">
+              <button type="button" onClick={() => onSkip('previous')} title="Skip Back" className="text-slate-500 hover:text-white transition-all transform active:scale-90"><SkipBack size={24} sm:size={32} /></button>
               <button
                 type="button"
                 onClick={onPlayPause}
                 title={isPlaying ? "Pause" : "Play"}
-                className="w-20 h-20 sonic-gradient text-white rounded-full flex items-center justify-center shadow-xl shadow-cyan-500/20 hover:scale-105 active:scale-95 transition-all"
+                className="w-16 h-16 sm:w-20 sm:h-20 sonic-gradient text-white rounded-full flex items-center justify-center shadow-xl shadow-cyan-500/20 hover:scale-105 active:scale-95 transition-all"
               >
                 {isLoading ? (
-                  <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-6 h-6 sm:w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
                 ) : isPlaying ? (
-                  <Pause size={40} fill="currentColor" strokeWidth={0} />
+                  <Pause size={30} sm:size={40} fill="currentColor" strokeWidth={0} />
                 ) : (
-                  <Play size={40} className="ml-2" fill="currentColor" strokeWidth={0} />
+                  <Play size={30} sm:size={40} className="ml-1" fill="currentColor" strokeWidth={0} />
                 )}
               </button>
-              <button type="button" onClick={() => onSkip('next')} title="Skip Forward" className="text-slate-500 hover:text-white transition-all transform active:scale-90"><SkipForward size={32} /></button>
+              <button
+                type="button"
+                onClick={() => onSkip('next')}
+                title="Skip Forward"
+                className="text-slate-500 hover:text-white transition-all transform active:scale-90"
+              >
+                <SkipForward size={24} sm:size={32} />
+              </button>
             </div>
 
-            <div className="w-full max-w-xs space-y-4">
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={() => onToggleFavorite(currentStation)}
+                className={`p-3 transition-all duration-500 ${isFavorite
+                  ? 'text-rose-500 scale-110 animate-pulse'
+                  : 'text-white/70 hover:text-white hover:scale-105'
+                  }`}
+              >
+                <Heart size={24} fill={isFavorite ? "currentColor" : "none"} strokeWidth={2.5} />
+              </button>
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">
+                {isFavorite ? 'En tus favoritos' : 'Añadir a favoritos'}
+              </p>
+            </div>
+
+            <div className="w-full max-w-xs px-4">
               <div className="flex items-center gap-4">
-                <VolumeX className="text-slate-500" size={20} />
+                <VolumeX className="text-slate-500" size={16} />
                 <input
                   type="range" min="0" max="1" step="0.01"
                   value={volume} onChange={e => onVolumeChange(parseFloat(e.target.value))}
-                  className="flex-1 accent-cyan-400 h-1.5 rounded-full cursor-pointer bg-slate-800"
+                  className="flex-1 accent-cyan-400 h-1 rounded-full cursor-pointer bg-slate-800"
                   title="Volume control"
                 />
-                <Volume2 className="text-slate-500" size={20} />
+                <Volume2 className="text-slate-500" size={16} />
               </div>
             </div>
           </div>
@@ -123,10 +153,13 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
               onClick={() => setIsExpanded(true)}
             >
               <img
-                src={currentStation.favicon || ''}
+                src={currentStation.favicon || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentStation.name)}&background=0D9488&color=fff&size=128&font-size=0.33&bold=true`}
                 alt="Logo"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                onError={e => (e.currentTarget.src = 'https://picsum.photos/100/100')}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentStation.name)}&background=0D9488&color=fff&size=128&font-size=0.33&bold=true`;
+                }}
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                 <Maximize2 size={16} className="text-white" />
@@ -136,6 +169,13 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
               <h4 className="font-bold text-slate-900 dark:text-white text-base truncate tracking-tight">{currentStation.name}</h4>
               <p className="text-xs font-bold text-cyan-500/80 uppercase tracking-widest truncate">{currentStation.country || 'Worldwide'}</p>
             </div>
+            <button
+              onClick={() => onToggleFavorite(currentStation)}
+              className={`p-2 rounded-lg transition-all ${isFavorite ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'
+                }`}
+            >
+              <Heart size={20} fill={isFavorite ? "currentColor" : "none"} />
+            </button>
           </div>
 
           <div className="flex flex-col items-center flex-1 space-y-2">

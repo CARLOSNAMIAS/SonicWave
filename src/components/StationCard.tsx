@@ -24,15 +24,15 @@ interface StationCardProps {
  * Muestra el nombre, el país y la imagen de la emisora. También proporciona controles
  * para reproducir/pausar la emisora y para agregarla/eliminarla de favoritos.
  */
-const StationCard: React.FC<StationCardProps> = ({ 
-  station, 
-  isPlaying, 
-  isFavorite, 
-  onPlay, 
-  onToggleFavorite 
+const StationCard: React.FC<StationCardProps> = ({
+  station,
+  isPlaying,
+  isFavorite,
+  onPlay,
+  onToggleFavorite
 }) => {
   return (
-    <div 
+    <div
       onClick={() => onPlay(station)}
       className={`
         group relative p-3 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/50
@@ -42,17 +42,21 @@ const StationCard: React.FC<StationCardProps> = ({
     >
       <div className="relative aspect-square mb-4 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shadow-inner">
         {station.favicon ? (
-          <img 
-            src={station.favicon} 
-            alt={station.name} 
+          <img
+            src={station.favicon}
+            alt={station.name}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(station.name)}&background=0D9488&color=fff&size=256&font-size=0.33&bold=true`;
+            }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-600">
+          <div className="w-full h-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600">
             <Music2 size={48} strokeWidth={1.5} />
           </div>
         )}
-        
+
         {/* Superposición del botón de reproducción */}
         <div className={`
           absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300
@@ -70,9 +74,9 @@ const StationCard: React.FC<StationCardProps> = ({
         {isPlaying && (
           <div className="absolute bottom-3 left-3 flex items-end gap-1 h-4">
             {[0, 0.2, 0.4].map((delay) => (
-              <div 
+              <div
                 key={delay}
-                className="w-1 bg-white animate-sound-wave rounded-full" 
+                className="w-1 bg-white animate-sound-wave rounded-full"
                 style={{ animationDelay: `${delay}s` }}
               ></div>
             ))}
@@ -89,7 +93,7 @@ const StationCard: React.FC<StationCardProps> = ({
         </p>
       </div>
 
-      <button 
+      <button
         type="button"
         aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         onClick={(e) => {
@@ -97,11 +101,19 @@ const StationCard: React.FC<StationCardProps> = ({
           onToggleFavorite(station);
         }}
         className={`
-          absolute top-5 right-5 p-2 rounded-full transition-all backdrop-blur-md
-          ${isFavorite ? 'text-rose-500 bg-rose-500/10' : 'text-white/70 bg-black/20 opacity-0 group-hover:opacity-100 hover:bg-black/40'}
+          absolute top-4 right-4 p-2.5 rounded-full transition-all duration-300 shadow-xl
+          ${isFavorite
+            ? 'text-rose-500 bg-white dark:bg-slate-900 scale-110 shadow-rose-500/20'
+            : 'text-white bg-black/40 backdrop-blur-md opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-black/60'
+          }
         `}
       >
-        <Heart size={16} fill={isFavorite ? "currentColor" : "none"} strokeWidth={2} />
+        <Heart
+          size={18}
+          fill={isFavorite ? "currentColor" : "none"}
+          strokeWidth={2.5}
+          className={isFavorite ? 'animate-in zoom-in-50 duration-300' : ''}
+        />
       </button>
     </div>
   );

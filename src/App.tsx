@@ -9,9 +9,10 @@ import { customVenezuelaStations } from '@/data/venezuelaStations';
 import StationCard from '@/components/StationCard';
 import PlayerBar from '@/components/PlayerBar';
 import AIDJModal from '@/components/AIDJModal';
-import { Radio, Sparkles, Music, Coffee, Zap, Moon, Sun, AlertCircle, Trophy, Compass, Github, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
+import { Radio, Sparkles, Music, Coffee, Zap, Moon, Sun, AlertCircle, Trophy, Compass, Github, ChevronLeft, ChevronRight, Menu, X, Mic, Heart, LayoutGrid } from 'lucide-react';
 import SkeletonCard from '@/components/SkeletonCard';
 import HeroCarousel from '@/components/HeroCarousel';
+import RecommendationToast from '@/components/RecommendationToast';
 
 
 const POPULAR_COUNTRIES = [
@@ -32,14 +33,26 @@ const POPULAR_COUNTRIES = [
   { name: 'Germany', code: 'de', label: 'Alemania' },
   { name: 'Japan', code: 'jp', label: 'Japón' },
   { name: 'South Korea', code: 'kr', label: 'Corea' },
+  { name: 'China', code: 'cn', label: 'China' },
+  { name: 'India', code: 'in', label: 'India' },
+  { name: 'Indonesia', code: 'id', label: 'Indonesia' },
+  { name: 'Philippines', code: 'ph', label: 'Filipinas' },
+  { name: 'Thailand', code: 'th', label: 'Tailandia' },
+  { name: 'Vietnam', code: 'vn', label: 'Vietnam' },
 
 ];
 
 const QUICK_MOODS = [
-  { id: 'lofi', icon: <Coffee size={16} />, label: 'Enfoque', tag: 'lofi' },
-  { id: 'dance', icon: <Zap size={16} />, label: 'Energía', tag: 'dance' },
-  { id: 'chill', icon: <Moon size={16} />, label: 'Relax', tag: 'chillout' },
-  { id: 'jazz', icon: <Music size={16} />, label: 'Jazz', tag: 'jazz' },
+  { id: 'lofi', icon: <Coffee size={16} />, label: 'Enfoque', filters: { tag: 'lofi' } },
+  { id: 'dance', icon: <Zap size={16} />, label: 'Energía', filters: { tag: 'dance' } },
+  { id: 'chill', icon: <Moon size={16} />, label: 'Relax', filters: { tag: 'chillout' } },
+  { id: 'jazz', icon: <Music size={16} />, label: 'Jazz', filters: { tag: 'jazz' } },
+  { id: 'rock', icon: <Music size={16} />, label: 'Rock', filters: { tag: 'rock' } },
+  { id: 'hip-hop', icon: <Music size={16} />, label: 'Hip-Hop', filters: { tag: 'hip-hop' } },
+  { id: 'electronic', icon: <Music size={16} />, label: 'Electrónica', filters: { tag: 'electronic' } },
+  { id: 'latin', icon: <Music size={16} />, label: 'Latino', filters: { tag: 'latin' } },
+  { id: 'podcast', icon: <Mic size={16} />, label: 'Podcasts (ESP)', filters: { tag: 'podcast', name: 'spanish' } },
+  { id: 'bts', icon: <Heart size={16} className="text-purple-400 fill-purple-400" />, label: 'BTS Army', filters: { name: 'bts' } },
 ];
 
 
@@ -91,6 +104,12 @@ const App: React.FC = () => {
   // Mobile menu state
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // Filters expansion state (mobile only)
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
+
+  // Recommendation state
+  const [recommendedStation, setRecommendedStation] = useState<RadioStation | null>(null);
+
   // Search description state
   const [searchTitle, setSearchTitle] = useState('Descubre más ondas');
 
@@ -126,6 +145,15 @@ const App: React.FC = () => {
   // Effect to load initial station data when the component mounts.
   useEffect(() => {
     loadInitialData();
+
+    // Hide native splash screen from index.html
+    const splash = document.getElementById('initial-splash');
+    if (splash) {
+      setTimeout(() => {
+        splash.classList.add('opacity-0', 'scale-110');
+        setTimeout(() => splash.remove(), 800);
+      }, 2000);
+    }
   }, []);
 
 
@@ -207,6 +235,10 @@ const App: React.FC = () => {
       setSearchTitle('Descubre más ondas');
     }
 
+    // Special override titles
+    if (filters.tag === 'podcast' && filters.name === 'spanish') setSearchTitle('Podcasts en Español');
+    if (filters.name === 'bts') setSearchTitle('BTS Army Radio');
+
     // Special handling for Venezuela to ensure custom stations are always at the top.
     if (filters.country === 'Venezuela') {
       const customStationUUIDs = new Set(customVenezuelaStations.map(s => s.stationuuid));
@@ -219,6 +251,47 @@ const App: React.FC = () => {
 
     setView(ViewState.HOME); // Switch back to the home view to show results.
     setIsFetching(false);
+  };
+
+  /**
+   * Handles finding a recommendation when a station is favorited
+   */
+  const handleRecommendation = async (station: RadioStation) => {
+    try {
+      // Prioritize country-based recommendation for Venezuelan stations
+      const searchOptions: SearchFilters = station.country === 'Venezuela'
+        ? { country: 'Venezuela', limit: 20 }
+        : { tag: station.tags?.split(',')[0] || 'music', limit: 20 };
+
+      const results = await searchStations(searchOptions);
+
+      // Filter out current station and stations already in favorites
+      const candidates = results.filter(s =>
+        s.stationuuid !== station.stationuuid &&
+        !favorites.some(f => f.stationuuid === s.stationuuid)
+      );
+
+      if (candidates.length > 0) {
+        // Pick a random candidate
+        const randomStation = candidates[Math.floor(Math.random() * candidates.length)];
+        setRecommendedStation(randomStation);
+      }
+    } catch (error) {
+      console.error("Error fetching recommendation:", error);
+    }
+  };
+
+  /**
+   * Wrapped toggleFavorite to include recommendation logic
+   */
+  const handleToggleFavorite = (station: RadioStation) => {
+    const isAdding = !favorites.some(f => f.stationuuid === station.stationuuid);
+    toggleFavorite(station);
+
+    if (isAdding) {
+      // Trigger recommendation with a slight delay
+      setTimeout(() => handleRecommendation(station), 1000);
+    }
   };
 
 
@@ -344,7 +417,7 @@ const App: React.FC = () => {
 
       {/* --- Navigation Bar --- */}
       <nav className="sticky top-0 z-40 sonic-glass border-b border-black/5 dark:border-white/5 h-20">
-        <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
           <div
             className="flex items-center space-x-3 cursor-pointer group"
             onClick={() => { setView(ViewState.HOME); loadInitialData(); }}
@@ -389,7 +462,7 @@ const App: React.FC = () => {
       </nav>
 
       {/* --- Main Content Area --- */}
-      <main className="max-w-7xl mx-auto px-6 py-1">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-1">
         {/* === CAROUSEL === */}
         {view === ViewState.HOME && <HeroCarousel />}
 
@@ -405,18 +478,76 @@ const App: React.FC = () => {
           <div className="space-y-12">
 
             {/* --- Search and Filter Section --- */}
-            <section>
-              {/* Quick Mood/Genre Buttons */}
-              <div className="flex flex-wrap gap-3">
-                {QUICK_MOODS.map(mood => (
+            <section className="space-y-4">
+              {/* Desktop View: Full Grid */}
+              <div className="hidden lg:block space-y-4">
+                <div className="flex items-center gap-3 text-slate-400">
+                  <Music size={20} />
+                  <h3 className="text-[11px] font-black uppercase tracking-[0.2em]">Categorías Disponibles</h3>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {QUICK_MOODS.map(mood => (
+                    <button
+                      key={mood.id}
+                      onClick={() => performSearch(mood.filters)}
+                      className="flex items-center gap-2 bg-white dark:bg-slate-900 text-slate-700 dark:text-white hover:bg-cyan-500 hover:text-white dark:hover:bg-cyan-500 px-6 py-3 rounded-2xl transition-all border border-slate-200 dark:border-white/5 shadow-sm text-sm font-black uppercase tracking-widest active:scale-95"
+                    >
+                      {mood.icon} {mood.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mobile View: Single Unified Button */}
+              <div className="lg:hidden space-y-4">
+                {!isFiltersExpanded ? (
                   <button
-                    key={mood.id}
-                    onClick={() => performSearch({ tag: mood.tag })}
-                    className="flex items-center gap-2 bg-white dark:bg-slate-900 text-slate-700 dark:text-white hover:bg-cyan-500 hover:text-white dark:hover:bg-cyan-500 px-6 py-3 rounded-2xl transition-all border border-slate-200 dark:border-white/5 shadow-sm text-sm font-black uppercase tracking-widest active:scale-95"
+                    onClick={() => setIsFiltersExpanded(true)}
+                    className="w-full sonic-gradient p-[1px] rounded-2xl shadow-lg shadow-cyan-500/20 active:scale-[0.98] transition-all"
                   >
-                    {mood.icon} {mood.label}
+                    <div className="bg-slate-50 dark:bg-sonic-darker rounded-[15px] px-6 py-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3 text-slate-700 dark:text-white">
+                        <div className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-500">
+                          <LayoutGrid size={24} />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-xs font-black uppercase tracking-widest text-cyan-500">Explorar</p>
+                          <p className="text-lg font-black tracking-tight">Géneros y Podcasts</p>
+                        </div>
+                      </div>
+                      <ChevronRight size={20} className="text-slate-400" />
+                    </div>
                   </button>
-                ))}
+                ) : (
+                  <div className="bg-slate-200/50 dark:bg-slate-900/50 p-6 rounded-3xl border border-slate-200 dark:border-white/5 animate-in zoom-in-95 duration-300">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-lg font-black dark:text-white tracking-tight">Elige una Categoría</h3>
+                      <button
+                        onClick={() => setIsFiltersExpanded(false)}
+                        className="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full shadow-sm"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {QUICK_MOODS.map(mood => (
+                        <button
+                          key={mood.id}
+                          onClick={() => {
+                            performSearch(mood.filters);
+                            setIsFiltersExpanded(false);
+                          }}
+                          className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-white p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-transparent active:scale-95 transition-all text-xs font-black uppercase tracking-widest text-center"
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                            {mood.icon}
+                            <span>{mood.label}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
 
@@ -495,7 +626,7 @@ const App: React.FC = () => {
                   isPlaying={currentStation?.stationuuid === s.stationuuid && isPlaying}
                   isFavorite={favorites.some(f => f.stationuuid === s.stationuuid)}
                   onPlay={handlePlayPause}
-                  onToggleFavorite={toggleFavorite}
+                  onToggleFavorite={handleToggleFavorite}
                 />
               ))}
             </div>
@@ -529,7 +660,7 @@ const App: React.FC = () => {
                   isPlaying={currentStation?.stationuuid === s.stationuuid && isPlaying}
                   isFavorite={favorites.some(f => f.stationuuid === s.stationuuid)}
                   onPlay={handlePlayPause}
-                  onToggleFavorite={toggleFavorite}
+                  onToggleFavorite={handleToggleFavorite}
                 />
               ))
             )}
@@ -593,7 +724,7 @@ const App: React.FC = () => {
 
       {/* --- Footer (AdSense Compliant) --- */}
       <footer className="mt-20 py-12 border-t border-slate-200 dark:border-white/5 bg-slate-100/30 dark:bg-black/20">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
           <div className="col-span-1 md:col-span-2 space-y-4">
             <h4 className="text-2xl font-black dark:text-white tracking-widest uppercase">SonicWave</h4>
             <p className="text-slate-500 dark:text-slate-400 max-w-sm">
@@ -624,8 +755,8 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-6 mt-12 pt-8 border-t border-slate-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
-          <p>&copy; {new Date().getFullYear()} SonicWave AI Radio. Transmitiendo con pasión.</p>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 mt-12 pt-8 border-t border-slate-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+          <p>&copy; {new Date().getFullYear()} SonicWave AI Radio. Transmitiendo en vivo.</p>
           <p className="italic">Disclaimer: SonicWave es un agregador que no aloja los flujos de audio directamente.</p>
         </div>
       </footer>
@@ -638,7 +769,7 @@ const App: React.FC = () => {
         <div className="absolute inset-0 bg-black/60" onClick={() => setIsMenuOpen(false)}></div>
 
         <div className={`relative z-10 w-80 h-full bg-slate-100 dark:bg-sonic-darker shadow-2xl transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-white/5">
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-white/5">
             <span className="text-xl font-black dark:text-white tracking-tighter uppercase">Menú</span>
             <button
               type="button"
@@ -649,7 +780,7 @@ const App: React.FC = () => {
               <X size={20} />
             </button>
           </div>
-          <div className="p-6 space-y-4">
+          <div className="p-4 sm:p-6 space-y-4">
             <button
               onClick={() => { setView(ViewState.HOME); setIsMenuOpen(false); }}
               className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.HOME ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}
@@ -699,7 +830,31 @@ const App: React.FC = () => {
       </div>
 
       {/* The global player bar */}
-      <PlayerBar currentStation={currentStation} isPlaying={isPlaying} onPlayPause={togglePlayPause} onSkip={handleSkip} volume={volume} onVolumeChange={setVolume} isLoading={isLoading} audioRef={audioRef} analyser={analyserRef.current} />
+      <PlayerBar
+        currentStation={currentStation}
+        isPlaying={isPlaying}
+        onPlayPause={togglePlayPause}
+        onSkip={handleSkip}
+        volume={volume}
+        onVolumeChange={setVolume}
+        isLoading={isLoading}
+        audioRef={audioRef}
+        analyser={analyserRef.current}
+        isFavorite={currentStation ? favorites.some(f => f.stationuuid === currentStation.stationuuid) : false}
+        onToggleFavorite={handleToggleFavorite}
+      />
+
+      {/* Recommendation Toast */}
+      {recommendedStation && (
+        <RecommendationToast
+          station={recommendedStation}
+          onClose={() => setRecommendedStation(null)}
+          onPlay={(s) => {
+            handlePlayPause(s);
+            setRecommendedStation(null);
+          }}
+        />
+      )}
     </div>
   );
 };
