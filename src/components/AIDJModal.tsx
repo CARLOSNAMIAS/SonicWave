@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, X, Send, Minimize2 } from 'lucide-react';
+import { Sparkles, X, Send, Minimize2, Volume2, VolumeX } from 'lucide-react';
 
 const ALL_SUGGESTIONS = [
   'Música lofi para estudiar',
@@ -33,9 +33,12 @@ interface AIDJModalProps {
   onSubmit: (prompt: string) => void;
   isProcessing: boolean;
   aiReasoning: string | null;
+  isMuted: boolean;
+  toggleMute: () => void;
+  isSpeaking: boolean;
 }
 
-const AIDJModal: React.FC<AIDJModalProps> = ({ isOpen, onClose, onSubmit, isProcessing, aiReasoning }) => {
+const AIDJModal: React.FC<AIDJModalProps> = ({ isOpen, onClose, onSubmit, isProcessing, aiReasoning, isMuted, toggleMute, isSpeaking }) => {
   const [input, setInput] = useState('');
   const [currentSuggestions, setCurrentSuggestions] = useState<string[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -139,10 +142,18 @@ const AIDJModal: React.FC<AIDJModalProps> = ({ isOpen, onClose, onSubmit, isProc
               </div>
               <div>
                 <h3 className="text-white font-black text-sm tracking-tight">Sonic AI DJ</h3>
-                <p className="text-white/70 text-xs font-medium">Siempre en línea</p>
+                <p className="text-white/70 text-xs font-medium">{isSpeaking ? 'Hablando...' : 'En línea'}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={toggleMute}
+                className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+                title={isMuted ? "Activar voz" : "Silenciar voz"}
+              >
+                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} className={isSpeaking ? 'animate-pulse' : ''} />}
+              </button>
               <button
                 type="button"
                 onClick={() => setIsMinimized(!isMinimized)}

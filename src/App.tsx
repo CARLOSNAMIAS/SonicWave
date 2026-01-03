@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
+import { useSpeech } from '@/hooks/useSpeech';
 import { RadioStation, ViewState, SearchFilters } from '@/types';
 import { searchStations, getTopStations } from '@/services/radioService';
 import { getRadioRecommendations } from '@/services/geminiService';
@@ -81,8 +82,11 @@ const App: React.FC = () => {
     setVolume,
     setIsLoading,
     togglePlayPause,
+    stopPlayer,
     analyserRef
   } = useAudioPlayer();
+
+  const { speak, isMuted, toggleMute, isSpeaking } = useSpeech();
 
   // State for radio station data
   const [stations, setStations] = useState<RadioStation[]>([]);
@@ -309,6 +313,7 @@ const App: React.FC = () => {
     try {
       const rec = await getRadioRecommendations(prompt);
       setAiReasoning(rec.reasoning); // Display the AI's reasoning.
+      speak(rec.reasoning); // Make the AI speak the reasoning.
       // Set a title specific to AI search
       setSearchTitle('Recomendaciones de tu DJ IA');
       // Don't close the modal - let the chat component handle displaying the response
@@ -453,9 +458,9 @@ const App: React.FC = () => {
               type="button"
               title="Abrir asistente de IA DJ"
               onClick={() => setIsAIModalOpen(true)}
-              className="hidden lg:flex sonic-gradient text-white px-6 py-2.5 rounded-full text-[13px] font-black uppercase tracking-widest items-center gap-2 hover:shadow-xl hover:shadow-cyan-500/20 active:scale-95 transition-all"
+              className={`hidden lg:flex ${isSpeaking ? 'bg-rose-500 animate-pulse' : 'sonic-gradient'} text-white px-6 py-2.5 rounded-full text-[13px] font-black uppercase tracking-widest items-center gap-2 hover:shadow-xl hover:shadow-cyan-500/20 active:scale-95 transition-all`}
             >
-              <Sparkles size={16} fill="currentColor" /> AI DJ
+              <Sparkles size={16} fill="currentColor" className={isSpeaking ? 'animate-bounce' : ''} /> {isSpeaking ? 'Escuchando DJ...' : 'AI DJ'}
             </button>
           </div>
         </div>
@@ -762,7 +767,16 @@ const App: React.FC = () => {
       </footer>
 
       {/* --- Modals and Overlays --- */}
-      <AIDJModal isOpen={isAIModalOpen} onClose={() => setIsAIModalOpen(false)} onSubmit={handleAIRequest} isProcessing={aiProcessing} aiReasoning={aiReasoning} />
+      <AIDJModal
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        onSubmit={handleAIRequest}
+        isProcessing={aiProcessing}
+        aiReasoning={aiReasoning}
+        isMuted={isMuted}
+        toggleMute={toggleMute}
+        isSpeaking={isSpeaking}
+      />
 
       {/* Mobile Off-canvas Menu */}
       <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
@@ -817,14 +831,14 @@ const App: React.FC = () => {
         onTouchEnd={handleTouchEnd}
       >
         <span className="relative flex h-14 w-14">
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 ${isDragging ? 'opacity-0' : ''}`}></span>
+          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isSpeaking ? 'bg-rose-400' : 'bg-cyan-400'} opacity-75 ${isDragging ? 'opacity-0' : ''}`}></span>
           <button
             type="button"
             title="Abrir asistente de IA DJ"
             onClick={() => !isDragging && setIsAIModalOpen(true)}
-            className={`relative inline-flex w-14 h-14 sonic-gradient rounded-full items-center justify-center shadow-2xl shadow-cyan-500/30 transition-transform ${isDragging ? 'scale-110' : 'active:scale-95'}`}
+            className={`relative inline-flex w-14 h-14 ${isSpeaking ? 'bg-rose-500' : 'sonic-gradient'} rounded-full items-center justify-center shadow-2xl ${isSpeaking ? 'shadow-rose-500/30' : 'shadow-cyan-500/30'} transition-transform ${isDragging ? 'scale-110' : 'active:scale-95'}`}
           >
-            <Sparkles size={24} fill="currentColor" className="text-white" />
+            <Sparkles size={24} fill="currentColor" className={`text-white ${isSpeaking ? 'animate-bounce' : ''}`} />
           </button>
         </span>
       </div>
