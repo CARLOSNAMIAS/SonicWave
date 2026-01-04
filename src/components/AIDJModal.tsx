@@ -30,7 +30,7 @@ interface Message {
 interface AIDJModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (prompt: string) => void;
+  onSubmit: (prompt: string, history: any[]) => void;
   isProcessing: boolean;
   aiReasoning: string | null;
   isMuted: boolean;
@@ -101,8 +101,14 @@ const AIDJModal: React.FC<AIDJModalProps> = ({ isOpen, onClose, onSubmit, isProc
       };
       setMessages(prev => [...prev, userMessage]);
 
+      // Map existing messages to ChatMessage format for AI context
+      const history = messages.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'model',
+        content: msg.text
+      }));
+
       // Submit to AI
-      onSubmit(input);
+      onSubmit(input, history);
       setInput('');
     }
   };
@@ -124,7 +130,7 @@ const AIDJModal: React.FC<AIDJModalProps> = ({ isOpen, onClose, onSubmit, isProc
         className={`fixed z-[100] transition-all duration-500 ease-out ${isOpen
           ? 'translate-y-0 opacity-100'
           : 'translate-y-8 opacity-0 pointer-events-none'
-          } ${isMinimized ? 'h-16' : 'h-[600px] max-h-[70vh]'
+          } ${isMinimized ? 'h-16' : 'h-[600px] max-h-[85vh]'
           }`}
         style={{
           bottom: '20px',
@@ -184,12 +190,12 @@ const AIDJModal: React.FC<AIDJModalProps> = ({ isOpen, onClose, onSubmit, isProc
                     className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.sender === 'user'
+                      className={`max-w-[85%] rounded-2xl px-4 py-3 break-words ${message.sender === 'user'
                         ? 'sonic-gradient text-white rounded-br-sm'
                         : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-bl-sm shadow-sm'
                         }`}
                     >
-                      <p className="text-sm font-medium leading-relaxed">{message.text}</p>
+                      <p className="text-sm font-medium leading-relaxed whitespace-pre-wrap">{message.text}</p>
                     </div>
                   </div>
                 ))}

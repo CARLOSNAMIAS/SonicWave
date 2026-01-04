@@ -68,11 +68,18 @@ export const useAudioPlayer = () => {
     if (isPlaying) {
       audio.play().catch(err => {
         // Ignore AbortError which can happen on rapid source changes.
-        if (err.name !== 'AbortError') {
-          console.error("Audio Playback Error:", err);
-          setPlaybackError("No se puede reproducir este stream actualmente.");
-          setIsPlaying(false);
+        if (err.name === 'AbortError') return;
+
+        console.error("Audio Playback Error:", err);
+
+        if (err.name === 'NotAllowedError') {
+          setPlaybackError("Autoplay bloqueado. Interactúa con la página.");
+        } else if (err.name === 'NotSupportedError') {
+          setPlaybackError("Formato de audio no soportado por este navegador.");
+        } else {
+          setPlaybackError(`Error de reproducción: ${err.message}`);
         }
+        setIsPlaying(false);
       });
     } else {
       audio.pause();

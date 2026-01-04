@@ -1,5 +1,5 @@
 
-import { AIRecommendation } from "@/types";
+import { AIRecommendation, ChatMessage } from "@/types";
 
 /**
  * Fetches AI-powered radio recommendations based on a user's prompt.
@@ -7,21 +7,18 @@ import { AIRecommendation } from "@/types";
  * which in turn processes the prompt with the Google Gemini API.
  *
  * @param userPrompt The natural language prompt from the user (e.g., "rock music for coding").
+ * @param history The conversation history for context.
  * @returns A promise that resolves to an `AIRecommendation` object.
- *          This object includes the AI's reasoning and the search query to be used
- *          with the radio API.
- *          In case of an error or if the AI is unavailable, it returns a fallback
- *          recommendation (e.g., pop music).
  */
-export const getRadioRecommendations = async (userPrompt: string): Promise<AIRecommendation> => {
+export const getRadioRecommendations = async (userPrompt: string, history: ChatMessage[] = []): Promise<AIRecommendation> => {
   try {
-    // Sends the user's prompt to the backend API endpoint.
+    // Sends the user's prompt and history to the backend API endpoint.
     const response = await fetch('/api/recommend', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ userPrompt }),
+      body: JSON.stringify({ userPrompt, history }),
     });
 
     if (!response.ok) {

@@ -26,7 +26,7 @@ export default async function handler(
     return response.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { userPrompt } = request.body;
+  const { userPrompt, history = [] } = request.body;
 
   if (!userPrompt) {
     return response.status(400).json({ error: 'userPrompt is required' });
@@ -50,67 +50,67 @@ export default async function handler(
       Tu objetivo es traducir la solicitud del usuario (estado de ánimo, género, actividad o gusto específico) 
       en parámetros de búsqueda compatibles con la Radio Browser API.
       
+      IMPORTANTE: Tienes acceso al historial de la conversación. Si el usuario hace una petición de seguimiento 
+      como "algo más movido" o "ponme otro", utiliza el contexto anterior para refinar la búsqueda.
+      
       La Radio Browser API soporta búsquedas por: 'tag' (género), 'country' (país) y 'name' (nombre de la emisora).
       
       REGLAS CRÍTICAS PARA LA VARIEDAD:
       1. No te limites a géneros genéricos. Si el usuario pide algo relajante, alterna entre 'lofi', 'ambient', 'chillout', 'jazz', 'classical' o 'nature'.
       2. Sé específico con los subgéneros si es posible (ej. 'synthwave' en lugar de 'electronic', 'reggaeton' en lugar de 'latino').
       3. Varía los países si la solicitud es global (ej. 'France', 'Japan', 'Brazil', 'United Kingdom').
-      4. Si el usuario repite una idea, intenta ofrecer un ángulo diferente (ej. si pide rock, prueba con 'rockabilly', 'grunge' o 'indie rock').
-      5. Responde SIEMPRE en español.
+      4. Si el usuario repite una idea, intenta ofrecer un ángulo diferente.
+      5. Responde SIEMPRE en español con un tono profesional pero divertido.
       
+      VIBE VISUAL:
+      Proporciona un "vibe" visual que represente la música seleccionada:
+      - primaryColor: Un color hexadecimal (ej. #EF4444 para energía, #8B5CF6 para relax) o un color de Tailwind.
+      - accentColor: Un color de acento que combine bien.
+      - mood: Una palabra que describa el sentimiento (ej. 'enérgico', 'meditativo', 'nostálgico').
+
       Analiza la solicitud y proporciona:
-      1. Un razonamiento corto, divertido y profesional en español para tu elección.
-      2. Un objeto estructurado con 'tag', 'country', o 'name' para realizar la búsqueda.
-      
-      Ejemplo:
-      Usuario: "Quiero relajarme mientras programo"
-      Resultado: { "reasoning": "He seleccionado unos ritmos lofi y ambient que te ayudarán a mantener el foco absoluto.", "searchQuery": { "tag": "lofi" } }
+      1. Un razonamiento corto y divertido en español.
+      2. Un objeto estructurado para la búsqueda.
+      3. El "vibe" visual.
     `;
 
+    // Process history for Gemini format
+    const geminiHistory = (history as any[]).map(msg => ({
+      role: msg.role === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.content }]
+    }));
+
     const genAIResponse = await ai.models.generateContent({
-      model: "gemini-3-flash-preview", // A fast and capable model suitable for this task.
-      contents: userPrompt,
+      model: "gemini-1.5-flash", // Use a stable model
+      contents: [
+        ...geminiHistory,
+        { role: 'user', parts: [{ text: userPrompt }] }
+      ],
       config: {
         systemInstruction: systemInstruction,
-        responseMimeType: "application/json", // Enforce JSON output.
-        // Define the exact JSON schema the AI's response must follow.
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            reasoning: {
-              type: Type.STRING,
-              description: "The AI's reasoning for the recommendation."
-            },
-            searchQuery: {
-              type: Type.OBJECT,
-              properties: {
-                tag: { type: Type.STRING },
-                country: { type: Type.STRING },
-                name: { type: Type.STRING },
-              },
-              description: "The search query for the Radio Browser API."
-            },
-            suggestedStationNames: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: "A list of 3 specific famous station names if applicable, otherwise empty."
-            }
-          },
-          required: ["reasoning", "searchQuery"],
-        },
+        responseMimeType: "application/json",
       },
     });
 
     const text = genAIResponse.text;
+
     if (!text) {
       throw new Error("No response from AI");
     }
 
-    const result = JSON.parse(text) as AIRecommendation;
+    // Since we are using JSON mode, we should try to parse it
+    let aiResponse;
+    try {
+      // Find JSON block if it exists, or just parse if the whole text is JSON
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      const jsonStr = jsonMatch ? jsonMatch[0] : text;
+      aiResponse = JSON.parse(jsonStr) as AIRecommendation;
+    } catch (e) {
+      console.error("Failed to parse AI JSON response:", text);
+      throw new Error("Invalid AI response format");
+    }
 
-    // Send the successful response back to the client
-    return response.status(200).json(result);
+    return response.status(200).json(aiResponse);
 
   } catch (error) {
     console.error("Gemini AI Error:", error);

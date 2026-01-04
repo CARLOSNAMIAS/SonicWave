@@ -20,7 +20,7 @@ const carouselImages = [
 
 const HeroCarousel: React.FC = () => {
   return (
-    <div className="w-full h-64 md:h-96 rounded-xl overflow-hidden mb-12 shadow-2xl shadow-cyan-500/20">
+    <div className="w-full h-64 md:h-96 rounded-xl overflow-hidden mb-8 md:mb-16 shadow-2xl shadow-cyan-500/20">
       <Swiper
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
         spaceBetween={50}
