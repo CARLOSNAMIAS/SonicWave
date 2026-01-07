@@ -22,6 +22,8 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import HomeView from '@/views/HomeView';
 import FavoritesView from '@/views/FavoritesView';
+import AboutView from '@/views/AboutView';
+import CookieBanner from '@/components/CookieBanner';
 
 /**
  * Inner App component that has access to PlayerContext.
@@ -101,13 +103,35 @@ const SonicWaveApp: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    // Initial load from URL
+    const params = new URLSearchParams(window.location.search);
+    const viewParam = params.get('view');
+    if (viewParam === 'ABOUT') {
+      setView(ViewState.ABOUT);
+    } else if (viewParam === 'FAVORITES') {
+      setView(ViewState.FAVORITES);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Sync URL with view state
+    const params = new URLSearchParams(window.location.search);
+    if (view === ViewState.HOME) {
+      params.delete('view');
+    } else {
+      params.set('view', view);
+    }
+
+    const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
+    window.history.replaceState(null, '', newUrl);
+
     if (isMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
     return () => { document.body.style.overflow = 'unset'; };
-  }, [isMenuOpen]);
+  }, [isMenuOpen, view]);
 
   // --- Logic ---
 
@@ -216,7 +240,7 @@ const SonicWaveApp: React.FC = () => {
       }, 100);
     } catch (error) {
       console.error("AI Request Error:", error);
-      setPlaybackError("El DJ de IA no está disponible en este momento.");
+      setPlaybackError("El DJ de IA tiene problemas de conexión, pero puedes seguir buscando por género o país manualmente.");
     } finally {
       setAiProcessing(false);
     }
@@ -372,6 +396,8 @@ const SonicWaveApp: React.FC = () => {
           />
         )}
 
+        {view === ViewState.ABOUT && <AboutView />}
+
         {/* SEO / About Section included in Footer or below content? Original had it in main. Keeping it here. */}
         {view === ViewState.HOME && <section className="mt-28 py-16 border-t border-slate-200 dark:border-white/5">
           {/* This could also be extracted to an AboutSection component */}
@@ -419,7 +445,7 @@ const SonicWaveApp: React.FC = () => {
         </section>}
       </main>
 
-      <Footer />
+      <Footer onAboutClick={() => { setView(ViewState.ABOUT); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
 
       <AIDJModal
         isOpen={isAIModalOpen}
@@ -443,6 +469,7 @@ const SonicWaveApp: React.FC = () => {
           <div className="p-4 sm:p-6 space-y-4">
             <button onClick={() => { setView(ViewState.HOME); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.HOME ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Descubrir</button>
             <button onClick={() => { setView(ViewState.FAVORITES); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.FAVORITES ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Favoritos</button>
+            <button onClick={() => { setView(ViewState.ABOUT); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.ABOUT ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Sobre Nosotros</button>
             <div className="pt-4 border-t border-slate-200 dark:border-white/10 sm:hidden">
               <button onClick={toggleTheme} className="w-full flex items-center justify-between text-slate-600 dark:text-slate-300 text-lg font-bold">Cambiar Tema {theme === 'dark' ? <React.Fragment>☀️</React.Fragment> : <React.Fragment>🌙</React.Fragment>}</button>
             </div>
@@ -502,6 +529,8 @@ const SonicWaveApp: React.FC = () => {
         />
       )}
 
+
+      <CookieBanner />
     </div>
   );
 }

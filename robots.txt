@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: https://sonicwave-radio.vercel.app/compartir.png/sitemap.xml
+Sitemap: https://sonicwave-radio.vercel.app/sitemap.xml
 

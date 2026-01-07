@@ -1,9 +1,12 @@
 import React from 'react';
 import { RadioStation, SearchFilters } from '@/types';
 import { usePlayer } from '@/context/PlayerContext';
+import { useSEO } from '@/hooks/useSEO';
 import StationCard from '@/components/StationCard';
 import SkeletonCard from '@/components/SkeletonCard';
 import HeroCarousel from '@/components/HeroCarousel';
+import ContentHeader from '@/components/ContentHeader';
+import { getContentForFilter, ContentInfo } from '@/data/contentData';
 import { Music, LayoutGrid, X, Compass, Sparkles, Trophy, ChevronLeft, ChevronRight as ChevronRightIcon, Coffee, Zap, Moon, Heart, Mic } from 'lucide-react';
 
 // Constants moved to a local scope or separate file if preferred
@@ -80,6 +83,32 @@ const HomeView: React.FC<HomeViewProps> = ({
 }) => {
     const { currentStation, isPlaying, handlePlayPause } = usePlayer();
     const [isFiltersExpanded, setIsFiltersExpanded] = React.useState(false);
+    const [activeContent, setActiveContent] = React.useState<ContentInfo | null>(null);
+
+    // Update content when search is performed or mounted
+    // We can infer content from searchTitle/state or pass it as prop?
+    // For simplicity, let's track the last filter used or default.
+    // However, since we don't have the last filter here directly exposed as state in HomeView (it's in App),
+    // we might need to derive it or update App to pass it.
+    // simpler hack: derived from searchTitle? No, that's brittle.
+    // Better: Allow HomeView to accept 'activeFilter' or similar. 
+    // OR: just defaulting to general message if not specific.
+
+    // Let's rely on a side-effect of onPerformSearch wrapper:
+    // Actually, HomeView props don't have the filter state. 
+    // Let's modify the onPerformSearch calls inside HomeView to ALSO update local content state.
+
+    const handleSearch = (filters: SearchFilters) => {
+        onPerformSearch(filters);
+        const type = filters.country ? 'country' : (filters.tag ? 'tag' : 'default');
+        const key = filters.country || filters.tag || 'default';
+        setActiveContent(getContentForFilter(key, type));
+    };
+
+    useSEO({
+        title: activeContent ? `SonicWave - ${activeContent.title}` : 'SonicWave AI Radio - Explora el Mundo',
+        description: activeContent?.description || 'Descubre emisoras de radio de todo el mundo con inteligencia artificial.'
+    });
 
     return (
         <div className="space-y-10">
@@ -98,7 +127,7 @@ const HomeView: React.FC<HomeViewProps> = ({
                         {QUICK_MOODS.map(mood => (
                             <button
                                 key={mood.id}
-                                onClick={() => onPerformSearch(mood.filters)}
+                                onClick={() => handleSearch(mood.filters)}
                                 className="flex items-center gap-2 bg-white dark:bg-slate-900 text-slate-700 dark:text-white hover:bg-cyan-500 hover:text-white dark:hover:bg-cyan-500 px-6 py-3 rounded-2xl transition-all border border-slate-200 dark:border-white/5 shadow-sm text-sm font-black uppercase tracking-widest active:scale-95"
                             >
                                 {mood.icon} {mood.label}
@@ -143,7 +172,7 @@ const HomeView: React.FC<HomeViewProps> = ({
                                     <button
                                         key={mood.id}
                                         onClick={() => {
-                                            onPerformSearch(mood.filters);
+                                            handleSearch(mood.filters);
                                             setIsFiltersExpanded(false);
                                         }}
                                         className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-white p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-transparent active:scale-95 transition-all text-xs font-black uppercase tracking-widest text-center"
@@ -168,7 +197,7 @@ const HomeView: React.FC<HomeViewProps> = ({
                 </div>
                 <div ref={countryScrollRef} className="flex gap-8 overflow-x-auto pb-6 scrollbar-hide">
                     {POPULAR_COUNTRIES.map(c => (
-                        <button key={c.code} onClick={() => onPerformSearch({ country: c.name })} className="flex flex-col items-center gap-4 group shrink-0">
+                        <button key={c.code} onClick={() => handleSearch({ country: c.name })} className="flex flex-col items-center gap-4 group shrink-0">
                             <div className="w-24 h-24 rounded-full p-1.5 border-2 border-transparent group-hover:border-cyan-500 transition-all duration-500 overflow-hidden shadow-xl">
                                 <img src={`https://flagcdn.com/w160/${c.code}.png`} className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-700" alt={c.label} />
                             </div>
@@ -217,13 +246,16 @@ const HomeView: React.FC<HomeViewProps> = ({
             {/* === FEATURED STATIONS === */}
             {featuredStations.length > 0 && (
                 <section className="mt-16 space-y-8">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-4">
                             <div className="sonic-gradient p-2 rounded-lg shadow-lg">
                                 <Trophy size={20} className="text-white" />
                             </div>
-                            <h3 className="text-2xl font-black dark:text-white tracking-tighter">Destacadas para ti</h3>
+                            <h3 className="text-2xl font-black dark:text-white tracking-tighter">Selección de los Editores</h3>
                         </div>
+                        <p className="text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed text-sm md:text-base border-l-4 border-cyan-500 pl-4">
+                            Cada semana, nuestro equipo editorial y algoritmos de IA seleccionan emisoras que destacan por su calidad de transmisión, unicidad cultural y contribución al paisaje sonoro global. Estas son nuestras recomendaciones principales para empezar tu viaje.
+                        </p>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 lg:gap-8">
                         {featuredStations.map(s => (
@@ -242,6 +274,9 @@ const HomeView: React.FC<HomeViewProps> = ({
 
             {/* --- Main Station List --- */}
             <section ref={resultsSectionRef} className="mt-20 space-y-10">
+                {activeContent && !aiReasoning && (
+                    <ContentHeader content={activeContent} className="animate-in fade-in slide-in-from-bottom-4" />
+                )}
                 <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/5 pb-4">
                     <h3
                         key={searchTitle}

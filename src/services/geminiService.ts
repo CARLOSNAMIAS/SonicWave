@@ -34,7 +34,7 @@ export const getRadioRecommendations = async (userPrompt: string, history: ChatM
     console.error("AI Recommendation Error:", error);
     // If the request fails, provide a user-friendly fallback recommendation.
     return {
-      reasoning: "El DJ de IA no está disponible en este momento. ¡Aquí tienes una selección de música pop para que no pare la música!",
+      reasoning: "El DJ de IA está tomando un descanso técnico, ¡pero aquí tienes una selección de música popular para que siga el ritmo!",
       searchQuery: { tag: "pop" }
     };
   }

@@ -45,4 +45,5 @@ export enum ViewState {
   HOME = 'HOME',
   FAVORITES = 'FAVORITES',
   AI_RECOMMEND = 'AI_RECOMMEND',
+  ABOUT = 'ABOUT',
 }

@@ -68,6 +68,12 @@ const Navbar: React.FC<NavbarProps> = ({
                     >
                         Favoritos
                     </button>
+                    <button
+                        onClick={() => setView(ViewState.ABOUT)}
+                        className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.ABOUT ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-600 hover:text-cyan-500'}`}
+                    >
+                        Sobre Nosotros
+                    </button>
                 </div>
 
                 {/* Controls Section */}
