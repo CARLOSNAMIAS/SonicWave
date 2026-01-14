@@ -46,4 +46,5 @@ export enum ViewState {
   FAVORITES = 'FAVORITES',
   AI_RECOMMEND = 'AI_RECOMMEND',
   ABOUT = 'ABOUT',
+  MAGAZINE = 'MAGAZINE',
 }

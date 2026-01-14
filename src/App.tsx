@@ -23,6 +23,7 @@ import Footer from '@/components/layout/Footer';
 import HomeView from '@/views/HomeView';
 import FavoritesView from '@/views/FavoritesView';
 import AboutView from '@/views/AboutView';
+import MagazineView from '@/views/MagazineView';
 import CookieBanner from '@/components/CookieBanner';
 
 /**
@@ -398,6 +399,8 @@ const SonicWaveApp: React.FC = () => {
 
         {view === ViewState.ABOUT && <AboutView />}
 
+        {view === ViewState.MAGAZINE && <MagazineView />}
+
         {/* SEO / About Section included in Footer or below content? Original had it in main. Keeping it here. */}
         {view === ViewState.HOME && <section className="mt-28 py-16 border-t border-slate-200 dark:border-white/5">
           {/* This could also be extracted to an AboutSection component */}
@@ -445,7 +448,10 @@ const SonicWaveApp: React.FC = () => {
         </section>}
       </main>
 
-      <Footer onAboutClick={() => { setView(ViewState.ABOUT); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+      <Footer
+        onAboutClick={() => { setView(ViewState.ABOUT); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+        onMagazineClick={() => { setView(ViewState.MAGAZINE); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+      />
 
       <AIDJModal
         isOpen={isAIModalOpen}
@@ -464,11 +470,12 @@ const SonicWaveApp: React.FC = () => {
         <div className={`relative z-10 w-80 h-full bg-slate-100 dark:bg-sonic-darker shadow-2xl transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-white/5">
             <span className="text-xl font-black dark:text-white tracking-tighter uppercase">Menú</span>
-            <button type="button" onClick={() => setIsMenuOpen(false)} className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-cyan-500 rounded-xl transition-all"><X size={20} /></button>
+            <button type="button" onClick={() => setIsMenuOpen(false)} aria-label="Cerrar menú" title="Cerrar menú" className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-cyan-500 rounded-xl transition-all"><X size={20} /></button>
           </div>
           <div className="p-4 sm:p-6 space-y-4">
             <button onClick={() => { setView(ViewState.HOME); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.HOME ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Descubrir</button>
             <button onClick={() => { setView(ViewState.FAVORITES); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.FAVORITES ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Favoritos</button>
+            <button onClick={() => { setView(ViewState.MAGAZINE); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.MAGAZINE ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Revista</button>
             <button onClick={() => { setView(ViewState.ABOUT); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.ABOUT ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Sobre Nosotros</button>
             <div className="pt-4 border-t border-slate-200 dark:border-white/10 sm:hidden">
               <button onClick={toggleTheme} className="w-full flex items-center justify-between text-slate-600 dark:text-slate-300 text-lg font-bold">Cambiar Tema {theme === 'dark' ? <React.Fragment>☀️</React.Fragment> : <React.Fragment>🌙</React.Fragment>}</button>

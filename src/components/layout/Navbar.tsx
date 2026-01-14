@@ -69,6 +69,12 @@ const Navbar: React.FC<NavbarProps> = ({
                         Favoritos
                     </button>
                     <button
+                        onClick={() => setView(ViewState.MAGAZINE)}
+                        className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.MAGAZINE ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-600 hover:text-cyan-500'}`}
+                    >
+                        Revista
+                    </button>
+                    <button
                         onClick={() => setView(ViewState.ABOUT)}
                         className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.ABOUT ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-600 hover:text-cyan-500'}`}
                     >

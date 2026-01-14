@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Capacitor/Cordova build artifacts
+/android
+/ios
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

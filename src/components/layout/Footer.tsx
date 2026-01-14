@@ -6,12 +6,13 @@ import { Github } from 'lucide-react';
  */
 interface FooterProps {
     onAboutClick: () => void;
+    onMagazineClick: () => void;
 }
 
 /**
  * Footer component containing legal links, contact info, and disclaimer.
  */
-const Footer: React.FC<FooterProps> = ({ onAboutClick }) => {
+const Footer: React.FC<FooterProps> = ({ onAboutClick, onMagazineClick }) => {
     return (
         <footer className="mt-20 py-12 border-t border-slate-200 dark:border-white/5 bg-slate-100/30 dark:bg-black/20">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
@@ -32,6 +33,11 @@ const Footer: React.FC<FooterProps> = ({ onAboutClick }) => {
                 <div className="space-y-4">
                     <h5 className="font-black text-xs uppercase tracking-widest text-cyan-500">Información</h5>
                     <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
+                        <li>
+                            <button onClick={onMagazineClick} className="hover:text-cyan-500 transition-colors text-left font-bold">
+                                Revista Musical
+                            </button>
+                        </li>
                         <li>
                             <button onClick={onAboutClick} className="hover:text-cyan-500 transition-colors text-left">
                                 Sobre Nosotros
