@@ -44,6 +44,7 @@ export interface AIRecommendation {
 export enum ViewState {
   HOME = 'HOME',
   FAVORITES = 'FAVORITES',
+  EXPLORE = 'EXPLORE',
   AI_RECOMMEND = 'AI_RECOMMEND',
   ABOUT = 'ABOUT',
   MAGAZINE = 'MAGAZINE',

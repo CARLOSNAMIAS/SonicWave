@@ -62,7 +62,13 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
           </button>
 
           <div className="flex-1 flex flex-col items-center justify-center space-y-4 sm:space-y-12 py-2">
-            <div className={`w-48 h-48 sm:w-80 sm:h-80 rounded-3xl overflow-hidden shadow-[0_32px_64px_-12px_rgba(34,211,238,0.3)] transition-all duration-1000 transform ${isPlaying ? 'scale-100 rotate-0' : 'scale-90 rotate-2 opacity-50'}`}>
+            <div
+              className={`w-48 h-48 sm:w-80 sm:h-80 rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 transform ${isPlaying ? 'rotate-0' : 'scale-90 rotate-2 opacity-50'}`}
+              style={{
+                transform: isPlaying ? 'scale(var(--beat-scale, 1))' : undefined,
+                boxShadow: isPlaying ? '0 0 calc(var(--glow-intensity) * 60px) rgba(34, 211, 238, 0.4)' : undefined
+              }}
+            >
               <img
                 src={currentStation.favicon || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentStation.name)}&background=0D9488&color=fff&size=512&font-size=0.33&bold=true`}
                 alt={currentStation.name}

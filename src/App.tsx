@@ -24,7 +24,9 @@ import HomeView from '@/views/HomeView';
 import FavoritesView from '@/views/FavoritesView';
 import AboutView from '@/views/AboutView';
 import MagazineView from '@/views/MagazineView';
+import MapView from '@/views/MapView';
 import CookieBanner from '@/components/CookieBanner';
+import DynamicBackground from '@/components/DynamicBackground';
 
 /**
  * Inner App component that has access to PlayerContext.
@@ -315,6 +317,8 @@ const SonicWaveApp: React.FC = () => {
         `}</style>
       )}
 
+      <DynamicBackground />
+
       {/* Audio element controlled exclusively by PlayerContext */}
       {/* Audio element controlled exclusively by PlayerContext */}
       <audio
@@ -399,6 +403,10 @@ const SonicWaveApp: React.FC = () => {
 
         {view === ViewState.ABOUT && <AboutView />}
 
+        {view === ViewState.EXPLORE && (
+          <MapView onPerformSearch={performSearch} />
+        )}
+
         {view === ViewState.MAGAZINE && <MagazineView />}
 
         {/* SEO / About Section included in Footer or below content? Original had it in main. Keeping it here. */}
@@ -475,6 +483,7 @@ const SonicWaveApp: React.FC = () => {
           <div className="p-4 sm:p-6 space-y-4">
             <button onClick={() => { setView(ViewState.HOME); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.HOME ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Descubrir</button>
             <button onClick={() => { setView(ViewState.FAVORITES); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.FAVORITES ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Favoritos</button>
+            <button onClick={() => { setView(ViewState.EXPLORE); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.EXPLORE ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Explorar</button>
             <button onClick={() => { setView(ViewState.MAGAZINE); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.MAGAZINE ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Revista</button>
             <button onClick={() => { setView(ViewState.ABOUT); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.ABOUT ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Sobre Nosotros</button>
             <div className="pt-4 border-t border-slate-200 dark:border-white/10 sm:hidden">
