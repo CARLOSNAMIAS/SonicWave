@@ -1,27 +1,14 @@
 /**
  * Vercel Serverless Function to get AI-powered radio recommendations.
- *
- * This function acts as a secure backend proxy. It receives a user's prompt,
- * securely calls the Google Gemini API with a predefined system instruction,
- * and transforms the user's natural language request into a structured JSON object
- * that the frontend can use to search for radio stations.
- *
- * This backend approach is crucial for two reasons:
- * 1.  It protects the `GEMINI_API_KEY` by keeping it in a server-side environment variable,
- *     preventing its exposure to the client-side browser.
- * 2.  It allows for the definition of a controlled `systemInstruction`, ensuring the AI's
- *     responses are consistent, safe, and formatted correctly in the desired JSON schema.
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { AIRecommendation } from '../src/types';
 
-// This function is the serverless entry point.
 export default async function handler(
   request: VercelRequest,
   response: VercelResponse,
 ) {
-  // Only allow POST requests.
   if (request.method !== 'POST') {
     return response.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -32,19 +19,15 @@ export default async function handler(
     return response.status(400).json({ error: 'userPrompt is required' });
   }
 
-  // IMPORTANT: Use environment variables to protect API keys.
-  // This key should be set in your Vercel project settings.
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     console.error('GEMINI_API_KEY is not set');
     return response.status(500).json({ error: 'Server configuration error: AI service is not available.' });
   }
 
-  const ai = new GoogleGenAI({ apiKey });
+  const genAI = new GoogleGenerativeAI(apiKey);
 
   try {
-    // This system instruction is the "master prompt" that defines the AI's persona, task, and output format.
-    // It's a critical part of ensuring reliable and structured responses from the model.
     const systemInstruction = `
       Eres un experto curador musical y DJ de radio de clase mundial. 
       Tu objetivo es traducir la solicitud del usuario (estado de ánimo, género, actividad o gusto específico) 
@@ -72,39 +55,49 @@ export default async function handler(
       1. Un razonamiento corto y divertido en español.
       2. Un objeto estructurado para la búsqueda.
       3. El "vibe" visual.
+      
+      Responde SOLO con un objeto JSON válido con esta estructura:
+      {
+        "reasoning": "string",
+        "searchQuery": { "tag": "string" } | { "country": "string" } | { "name": "string" },
+        "vibe": {
+          "primaryColor": "string",
+          "accentColor": "string",
+          "mood": "string"
+        }
+      }
     `;
 
-    // Process history for Gemini format
-    const geminiHistory = (history as any[]).map(msg => ({
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash-exp",
+      systemInstruction: systemInstruction,
+      generationConfig: {
+        responseMimeType: "application/json",
+      }
+    });
+
+    // Build chat history
+    const chatHistory = (history as any[]).map((msg: any) => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }]
     }));
 
-    const genAIResponse = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: [
-        ...geminiHistory,
-        { role: 'user', parts: [{ text: userPrompt }] }
-      ],
-      config: {
-        systemInstruction: systemInstruction,
-        responseMimeType: "application/json",
-      },
+    const chat = model.startChat({
+      history: chatHistory,
     });
 
-    const text = genAIResponse.text;
+    const result = await chat.sendMessage(userPrompt);
+    const text = result.response.text();
 
     if (!text) {
       throw new Error("No response from AI");
     }
 
-    // Since we are using JSON mode, we should try to parse it
-    let aiResponse;
+    let aiResponse: AIRecommendation;
     try {
-      // Find JSON block if it exists, or just parse if the whole text is JSON
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       const jsonStr = jsonMatch ? jsonMatch[0] : text;
-      aiResponse = JSON.parse(jsonStr) as AIRecommendation;
+      aiResponse = JSON.parse(jsonStr);
     } catch (e) {
       console.error("Failed to parse AI JSON response:", text);
       throw new Error("Invalid AI response format");
@@ -114,7 +107,6 @@ export default async function handler(
 
   } catch (error) {
     console.error("Gemini AI Error:", error);
-    // In case of an error with the AI service, send a structured error and a fallback recommendation.
     const fallback: AIRecommendation = {
       reasoning: "No he podido contactar con mi asistente de IA, ¡pero aquí tienes algo de pop para animar el ambiente!",
       searchQuery: { tag: "pop" }
