@@ -18,8 +18,8 @@ describe('SkeletonCard', () => {
     it('has the correct structure', () => {
         const { container } = render(<SkeletonCard />);
 
-        // Verificar que hay al menos 3 bloques de skeleton (imagen + 2 líneas de texto)
-        const blocks = container.querySelectorAll('.bg-slate-200');
+        // Verificar que hay al menos 3 bloques de skeleton (carátula + 2 líneas de texto)
+        const blocks = container.querySelectorAll('.skeleton-block');
         expect(blocks.length).toBe(3);
     });
 });

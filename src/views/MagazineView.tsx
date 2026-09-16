@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useSEO } from '@/hooks/useSEO';
-import { Newspaper, Star, Lightbulb, RefreshCw, Music } from 'lucide-react';
 
 interface MagazineContent {
     horoscopes: {
@@ -85,121 +84,102 @@ const MagazineView: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-                <RefreshCw className="animate-spin text-cyan-500" size={48} />
-                <p className="text-slate-500 dark:text-slate-400 font-bold animate-pulse uppercase tracking-widest text-xs">Sintonizando Insights...</p>
+            <div className="min-h-[60vh] flex items-end pb-16">
+                <div>
+                    <div className="flex items-end gap-1 h-8 mb-5">
+                        {[0, 0.12, 0.24, 0.36, 0.48].map(delay => (
+                            <span
+                                key={delay}
+                                className="w-1.5 bg-signal animate-sound-wave"
+                                style={{ animationDelay: `${delay}s` }}
+                            />
+                        ))}
+                    </div>
+                    <p className="t-data text-[11px] text-meta-c">Cerrando la edición de hoy</p>
+                </div>
             </div>
         );
     }
 
+    const today = new Date().toLocaleDateString('es', { day: '2-digit', month: 'long', year: 'numeric' });
+
     return (
-        <div className="space-y-12 py-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
-            {/* Header */}
-            <header className="text-center space-y-4">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-cyan-500/10 border border-cyan-500/20 rounded-full">
-                    <Newspaper size={14} className="text-cyan-500" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-400">Sonic Magazine</span>
+        <div className="pt-10">
+            {/* Cabecera de la publicación */}
+            <header className="pb-6">
+                <div className="flex items-baseline justify-between gap-4 t-data text-[10px] text-meta-c mb-4">
+                    <span>Revista de SonicWave</span>
+                    <span>{today}</span>
                 </div>
-                <h1 className="text-4xl md:text-6xl font-black dark:text-white tracking-tight leading-none">
-                    Insights <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-indigo-500">Musicales</span>
+                <h1 className="t-display text-[clamp(2.75rem,14vw,9rem)]">
+                    Sonic Insights
                 </h1>
-                <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-medium">
-                    Explora el cosmos sonoro a través de nuestra inteligencia artificial. Noticias, horóscopo y curiosidades actualizadas diariamente.
-                </p>
             </header>
 
-            {/* Top Section: News & Trivia */}
-            <div className="grid lg:grid-cols-3 gap-8">
-                {/* News Section */}
-                <div className="lg:col-span-2 space-y-8">
-                    <div className="flex items-center gap-3 px-4">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                            <Newspaper size={20} className="text-indigo-500" />
-                        </div>
-                        <h2 className="text-xl font-black dark:text-white uppercase tracking-tight">Flash Melódico</h2>
-                    </div>
+            {/* Portada: dato del día */}
+            {content?.trivia && (
+                <section className="bg-ink text-paper px-6 md:px-10 py-10 md:py-14">
+                    <p className="t-data text-[10px] text-white/45 mb-5">Dato del día</p>
+                    <p className="t-display text-[clamp(1.75rem,6vw,3.5rem)] max-w-[20ch]">
+                        {content.trivia.fact}
+                    </p>
+                    <p className="mt-6 text-[15px] md:text-base leading-relaxed text-white/60 max-w-[62ch]">
+                        {content.trivia.context}
+                    </p>
+                </section>
+            )}
 
-                    <div className="grid sm:grid-cols-2 gap-6">
-                        {content?.news.map((item, idx) => (
-                            <article key={idx} className="p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-[2.5rem] hover:border-indigo-500/50 transition-all group">
-                                <div className="space-y-4">
-                                    <span className="inline-block px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-[10px] font-black uppercase tracking-widest text-indigo-500">
-                                        {item.tag}
-                                    </span>
-                                    <h3 className="text-2xl font-black dark:text-white leading-tight group-hover:text-indigo-500 transition-colors">
-                                        {item.title}
-                                    </h3>
-                                    <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">
-                                        {item.content}
-                                    </p>
-                                </div>
-                            </article>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Trivia & Featured Section */}
-                <div className="lg:col-span-1 space-y-6">
-                    <div className="p-8 bg-gradient-to-br from-indigo-600 to-violet-700 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-500/20 relative overflow-hidden h-full flex flex-col justify-center">
-                        <div className="absolute -bottom-4 -left-4 opacity-20">
-                            <Lightbulb size={120} />
-                        </div>
-                        <div className="relative z-10 space-y-4">
-                            <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-70">¿Sabías que?</h3>
-                            <p className="text-xl font-bold leading-tight">
-                                {content?.trivia.fact}
+            {/* Noticias a dos columnas */}
+            <section className="py-12">
+                <h2 className="t-data text-[10px] text-meta-c mb-6">Lo que suena en la industria</h2>
+                <div className="grid md:grid-cols-2 gap-10 md:gap-16">
+                    {content?.news.map((item, idx) => (
+                        <article key={idx} className="pt-5">
+                            <p className="t-data text-[10px] text-meta-c mb-3">{item.tag}</p>
+                            <h3 className="t-display text-[clamp(1.5rem,4vw,2.25rem)] mb-4">
+                                {item.title}
+                            </h3>
+                            <p className="text-[15px] leading-relaxed text-meta-c max-w-[58ch]">
+                                {item.content}
                             </p>
-                            <p className="text-sm opacity-80 leading-relaxed italic">
-                                "{content?.trivia.context}"
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Middle Section: Full Zodiac Grid */}
-            <section className="space-y-8 pt-8 border-t border-slate-200 dark:border-white/5">
-                <div className="flex flex-col items-center text-center space-y-2">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
-                            <Star size={20} className="text-cyan-500" />
-                        </div>
-                        <h2 className="text-2xl font-black dark:text-white uppercase tracking-tight">El Oráculo del Zodíaco</h2>
-                    </div>
-                    <p className="text-slate-500 text-sm font-medium">Predicciones musicales exclusivas para cada signo</p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {content?.horoscopes.map((h, idx) => (
-                        <div key={idx} className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-3xl shadow-sm relative overflow-hidden group hover:border-cyan-500/30 transition-all flex flex-col justify-between">
-                            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
-                                <Star size={40} className="text-cyan-500" />
-                            </div>
-                            <div className="relative z-10 space-y-3">
-                                <span className="text-xl font-black text-cyan-500 italic block">{h.sign}</span>
-                                <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-serif italic text-xs">
-                                    {h.prediction}
-                                </p>
-                            </div>
-                            <div className="pt-4 flex flex-col border-t border-slate-50 dark:border-white/5 mt-4">
-                                <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Recomendación Melódica</span>
-                                <p className="text-xs font-black dark:text-cyan-400">{h.recommendedGenre}</p>
-                            </div>
-                        </div>
+                        </article>
                     ))}
                 </div>
             </section>
 
-            {/* Bottom Controls */}
-            <div className="flex justify-center pt-8">
+            {/* Horóscopo: una fila por signo */}
+            <section className="py-12">
+                <div className="flex items-end justify-between gap-6 mb-6">
+                    <h2 className="t-display text-[clamp(1.75rem,5vw,3rem)]">Horóscopo sonoro</h2>
+                    <span className="t-data text-[10px] text-meta-c shrink-0 pb-1">
+                        {content?.horoscopes.length || 0} signos
+                    </span>
+                </div>
+
+                <div className="">
+                    {content?.horoscopes.map((h, idx) => (
+                        <article
+                            key={idx}
+                            className="grid md:grid-cols-[10rem_1fr_12rem] gap-3 md:gap-8 py-6"
+                        >
+                            <h3 className="t-display text-[clamp(1.25rem,3.5vw,1.75rem)]">{h.sign}</h3>
+                            <p className="text-[15px] leading-relaxed max-w-[62ch]">{h.prediction}</p>
+                            <p className="t-data text-[11px] text-meta-c md:text-right">
+                                Suena mejor con
+                                <span className="block text-ink dark:text-paper mt-1">{h.recommendedGenre}</span>
+                            </p>
+                        </article>
+                    ))}
+                </div>
+
                 <button
+                    type="button"
                     onClick={fetchInsights}
-                    className="flex items-center gap-3 px-10 py-5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all group"
+                    className="mt-10 h-12 px-8 bg-ink text-paper dark:bg-paper dark:text-ink text-[15px] font-semibold hover:bg-signal hover:text-white dark:hover:bg-signal dark:hover:text-white transition-colors"
                 >
-                    <RefreshCw size={20} className="text-cyan-500 group-hover:rotate-180 transition-transform duration-500" />
-                    <span className="font-black uppercase tracking-widest text-[11px] dark:text-white">Sincronizar nuevas predicciones</span>
+                    Pedir otra edición
                 </button>
-            </div>
+            </section>
         </div>
     );
 };

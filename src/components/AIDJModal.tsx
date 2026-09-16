@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, X, Send, Minimize2, Volume2, VolumeX } from 'lucide-react';
+import { X, Send, Minus, Volume2, VolumeX } from 'lucide-react';
 
 const ALL_SUGGESTIONS = [
   'Música lofi para estudiar',
@@ -38,6 +38,11 @@ interface AIDJModalProps {
   isSpeaking: boolean;
 }
 
+/**
+ * Consola de conversación con el DJ.
+ * Panel rectangular anclado a la esquina: cabecera negra con el estado de la voz,
+ * transcripción sin globos y una línea de entrada con filete inferior.
+ */
 const AIDJModal: React.FC<AIDJModalProps> = ({ isOpen, onClose, onSubmit, isProcessing, aiReasoning, isMuted, toggleMute, isSpeaking }) => {
   const [input, setInput] = useState('');
   const [currentSuggestions, setCurrentSuggestions] = useState<string[]>([]);
@@ -79,7 +84,7 @@ const AIDJModal: React.FC<AIDJModalProps> = ({ isOpen, onClose, onSubmit, isProc
       if (messages.length === 0) {
         setMessages([{
           id: 'welcome',
-          text: '¡Hola! 👋 Soy tu DJ de IA. Dime qué tipo de música buscas y te ayudaré a encontrar la emisora perfecta.',
+          text: 'Dime qué quieres escuchar: un género, un país, un momento del día. Busco las emisoras y te explico por qué.',
           sender: 'ai',
           timestamp: new Date(),
         }]);
@@ -119,165 +124,134 @@ const AIDJModal: React.FC<AIDJModalProps> = ({ isOpen, onClose, onSubmit, isProc
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Fondo de bloqueo en móvil */}
       <div
-        className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-[90] transition-opacity duration-300 lg:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className="fixed inset-0 bg-ink/40 z-[90] lg:hidden"
         onClick={onClose}
       />
 
-      {/* Chat Window */}
       <div
-        className={`fixed z-[100] transition-all duration-500 ease-out ${isOpen
-          ? 'translate-y-0 opacity-100'
-          : 'translate-y-8 opacity-0 pointer-events-none'
-          } ${isMinimized ? 'h-16' : 'h-[600px] max-h-[85vh]'
-          }`}
+        className={`fixed z-[100] ${isMinimized ? 'h-14' : 'h-[600px] max-h-[82vh]'}`}
         style={{
-          bottom: '20px',
-          right: '20px',
-          width: 'min(380px, calc(100vw - 40px))',
+          bottom: '0',
+          right: '0',
+          width: 'min(400px, 100vw)',
         }}
       >
-        <div className="h-full bg-white dark:bg-slate-900 rounded-3xl shadow-[0_20px_60px_-10px_rgba(34,211,238,0.3)] border border-slate-200 dark:border-slate-800/50 flex flex-col overflow-hidden">
+        <div className="h-full surface-raised flex flex-col overflow-hidden">
 
-          {/* Header */}
-          <div className="sonic-gradient p-4 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <Sparkles className="text-white" size={20} fill="currentColor" />
-              </div>
-              <div>
-                <h3 className="text-white font-black text-sm tracking-tight">Sonic AI DJ</h3>
-                <p className="text-white/70 text-xs font-medium">{isSpeaking ? 'Hablando...' : 'En línea'}</p>
-              </div>
+          {/* Cabecera */}
+          <div className="bg-ink text-paper h-14 px-4 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className={`w-2 h-2 shrink-0 ${isSpeaking ? 'bg-signal animate-signal-blink' : 'bg-signal'}`} />
+              <h3 className="font-semibold text-[15px] truncate">DJ de SonicWave</h3>
+              <span className="t-data text-[10px] text-white/45 shrink-0">
+                {isSpeaking ? 'Hablando' : isProcessing ? 'Buscando' : 'En línea'}
+              </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-0.5 shrink-0">
               <button
                 type="button"
                 onClick={toggleMute}
-                className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-                title={isMuted ? "Activar voz" : "Silenciar voz"}
+                className="w-9 h-9 flex items-center justify-center text-white/50 hover:text-white transition-colors"
+                title={isMuted ? 'Activar voz' : 'Silenciar voz'}
               >
-                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} className={isSpeaking ? 'animate-pulse' : ''} />}
+                {isMuted ? <VolumeX size={17} /> : <Volume2 size={17} />}
               </button>
               <button
                 type="button"
                 onClick={() => setIsMinimized(!isMinimized)}
-                className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-                title={isMinimized ? "Expandir" : "Minimizar"}
+                className="w-9 h-9 flex items-center justify-center text-white/50 hover:text-white transition-colors"
+                title={isMinimized ? 'Expandir' : 'Minimizar'}
               >
-                <Minimize2 size={18} />
+                <Minus size={17} />
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+                className="w-9 h-9 flex items-center justify-center text-white/50 hover:text-white transition-colors"
                 title="Cerrar"
               >
-                <X size={18} />
+                <X size={17} />
               </button>
             </div>
           </div>
 
-          {/* Chat Content - Hidden when minimized */}
           {!isMinimized && (
             <>
-              {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-950/50">
+              {/* Transcripción */}
+              <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5">
                 {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
-                  >
-                    <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-3 break-words ${message.sender === 'user'
-                        ? 'sonic-gradient text-white rounded-br-sm'
-                        : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-bl-sm shadow-sm'
-                        }`}
-                    >
-                      <p className="text-sm font-medium leading-relaxed whitespace-pre-wrap">{message.text}</p>
+                  message.sender === 'user' ? (
+                    <div key={message.id} className="flex justify-end">
+                      <p className="max-w-[85%] bg-ink text-paper dark:bg-paper dark:text-ink px-3.5 py-2.5 text-[14px] leading-relaxed whitespace-pre-wrap break-words">
+                        {message.text}
+                      </p>
                     </div>
-                  </div>
+                  ) : (
+                    <div key={message.id} className="border-l-2 border-signal pl-3.5">
+                      <p className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">
+                        {message.text}
+                      </p>
+                    </div>
+                  )
                 ))}
 
-                {/* Typing Indicator */}
                 {isProcessing && (
-                  <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                      </div>
-                    </div>
+                  <div className="border-l-2 border-signal pl-3.5 flex items-center gap-1.5 h-5">
+                    {[0, 0.15, 0.3].map(delay => (
+                      <span
+                        key={delay}
+                        className="w-[3px] h-3 bg-signal animate-sound-wave"
+                        style={{ animationDelay: `${delay}s` }}
+                      />
+                    ))}
                   </div>
                 )}
 
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Suggestions */}
-              <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+              {/* Atajos */}
+              <div className="px-4 py-3 shrink-0">
                 <div className="flex flex-wrap gap-2">
                   {currentSuggestions.map((suggestion) => (
                     <button
                       key={suggestion}
                       type="button"
                       onClick={() => handleSuggestionClick(suggestion)}
-                      className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-cyan-500 hover:text-white text-xs font-bold text-slate-600 dark:text-slate-300 rounded-full transition-all border border-transparent hover:border-cyan-500"
+                      className="px-2.5 py-1.5 surface text-[12px] text-meta-c hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors"
                     >
-                      {suggestion.length > 20 ? suggestion.substring(0, 20) + '...' : suggestion}
+                      {suggestion}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Input Area */}
-              <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
-                <form onSubmit={handleSubmit} className="relative">
-                  <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Escribe tu mensaje..."
-                    className={`w-full bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl pl-4 pr-12 py-3 focus:outline-none transition-all text-sm font-medium border-2 ${input.trim()
-                      ? 'border-cyan-500 input-wave'
-                      : 'border-transparent focus:border-cyan-500/30'
-                      }`}
-                    disabled={isProcessing}
-                  />
-                  <button
-                    type="submit"
-                    disabled={!input.trim() || isProcessing}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 sonic-gradient text-white rounded-xl disabled:opacity-50 disabled:grayscale transition-all shadow-lg active:scale-90"
-                    title="Enviar mensaje"
-                  >
-                    <Send size={18} fill="currentColor" />
-                  </button>
-                </form>
-              </div>
+              {/* Entrada */}
+              <form onSubmit={handleSubmit} className="flex items-stretch shrink-0">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Escribe qué quieres escuchar"
+                  aria-label="Mensaje para el DJ"
+                  className="flex-1 min-w-0 bg-transparent h-12 px-4 text-[14px] focus:outline-none placeholder:text-meta-c"
+                  disabled={isProcessing}
+                />
+                <button
+                  type="submit"
+                  disabled={!input.trim() || isProcessing}
+                  className="w-12 h-12 shrink-0 flex items-center justify-center bg-ink text-paper dark:bg-paper dark:text-ink disabled:opacity-25 hover:bg-signal hover:text-white dark:hover:bg-signal dark:hover:text-white transition-colors"
+                  title="Enviar mensaje"
+                >
+                  <Send size={17} />
+                </button>
+              </form>
             </>
           )}
         </div>
       </div>
-
-      {/* Wave Animation Styles */}
-      <style>{`
-        @keyframes wave {
-          0%, 100% {
-            box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4),
-                        0 0 20px 0 rgba(34, 211, 238, 0.1);
-          }
-          50% {
-            box-shadow: 0 0 0 8px rgba(34, 211, 238, 0),
-                        0 0 30px 5px rgba(34, 211, 238, 0.2);
-          }
-        }
-
-        .input-wave {
-          animation: wave 2s ease-in-out infinite;
-        }
-      `}</style>
     </>
   );
 };

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { RadioStation } from '@/types';
-import { Play, Pause, Volume2, VolumeX, SkipBack, SkipForward, ChevronDown, ChevronUp, Music2, Maximize2, Activity, Heart } from 'lucide-react';
+import { Play, Pause, Volume2, SkipBack, SkipForward, ChevronDown, ChevronUp, Heart } from 'lucide-react';
 import AudioVisualizer from './AudioVisualizer';
 
 /**
@@ -28,12 +28,22 @@ interface PlayerBarProps {
   onToggleFavorite: (station: RadioStation) => void;
 }
 
+const fallbackArt = (name: string, size: number) =>
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=000000&color=E9E6DF&size=${size}&font-size=0.34&bold=true&format=png`;
+
+/** Indicador de carga: dos filetes girando, sin círculos. */
+const Tuning: React.FC<{ size?: number }> = ({ size = 18 }) => (
+  <span
+    className="animate-spin block border-2 border-current border-r-transparent border-b-transparent"
+    style={{ width: size, height: size }}
+  />
+);
+
 /**
- * A responsive audio player component that appears at the bottom of the screen.
- * It has two views:
- * 1. A compact bar for desktop and mobile.
- * 2. An expandable, full-screen view with more details, primarily for mobile.
- * It displays the current station, playback controls, and volume controls.
+ * Reproductor fijo al pie de la página.
+ * Es la única superficie permanentemente negra de la interfaz: ancla el diseño y
+ * deja claro, en cualquier vista, qué se está escuchando. En móvil se despliega a
+ * pantalla completa con la carátula y el medidor de espectro.
  */
 const PlayerBar: React.FC<PlayerBarProps> = ({
   currentStation,
@@ -51,184 +61,227 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
 
   if (!currentStation) return null;
 
+  const genre = currentStation.tags?.split(',')[0] || 'Radio';
+  const code = (currentStation.countrycode || '--').slice(0, 2).toUpperCase();
+  const artwork = currentStation.favicon || fallbackArt(currentStation.name, 512);
+
   return (
     <>
-      {/* Mobile Fullscreen (Premium Look) */}
-      <div className={`fixed inset-0 z-[70] bg-sonic-darker transition-all duration-700 ease-in-out transform ${isExpanded ? 'translate-y-0' : 'translate-y-full'}`}>
-        <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/10 to-transparent pointer-events-none"></div>
-        <div className="h-full flex flex-col p-6 relative overflow-y-auto scrollbar-hide">
-          <button onClick={() => setIsExpanded(false)} className="self-center p-2 sm:p-4 text-slate-400 hover:text-white transition-colors shrink-0" title="Close player">
-            <ChevronDown size={40} strokeWidth={1.5} />
-          </button>
-
-          <div className="flex-1 flex flex-col items-center justify-center space-y-4 sm:space-y-12 py-2">
-            <div
-              className={`w-48 h-48 sm:w-80 sm:h-80 rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 transform ${isPlaying ? 'rotate-0' : 'scale-90 rotate-2 opacity-50'}`}
-              style={{
-                transform: isPlaying ? 'scale(var(--beat-scale, 1))' : undefined,
-                boxShadow: isPlaying ? '0 0 calc(var(--glow-intensity) * 60px) rgba(34, 211, 238, 0.4)' : undefined
-              }}
+      {/* Vista a pantalla completa (móvil) */}
+      <div
+        className={`fixed inset-0 z-[70] bg-ink text-paper transition-transform duration-300 ease-out ${isExpanded ? 'translate-y-0' : 'translate-y-full'}`}
+      >
+        <div className="h-full flex flex-col">
+          <div className="flex items-center justify-between px-4 h-14 shrink-0">
+            <span className="t-data text-[11px] text-white/50">
+              {isPlaying ? 'En directo' : 'En pausa'}
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsExpanded(false)}
+              className="w-10 h-10 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+              title="Close player"
+              aria-label="Cerrar reproductor"
             >
-              <img
-                src={currentStation.favicon || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentStation.name)}&background=0D9488&color=fff&size=512&font-size=0.33&bold=true`}
-                alt={currentStation.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentStation.name)}&background=0D9488&color=fff&size=512&font-size=0.33&bold=true`;
-                }}
-              />
+              <ChevronDown size={22} />
+            </button>
+          </div>
+
+          <div className="flex-1 flex flex-col justify-center px-6 py-8 gap-8 overflow-y-auto scrollbar-hide">
+            <img
+              src={artwork}
+              alt=""
+              className="w-full max-w-[280px] aspect-square object-cover mx-auto grayscale contrast-125"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = fallbackArt(currentStation.name, 512);
+              }}
+            />
+
+            <div>
+              <h2 className="t-display text-[clamp(2rem,9vw,3.5rem)] break-words">
+                {currentStation.name}
+              </h2>
+              <p className="t-data text-[11px] text-white/50 mt-3 flex items-center gap-2">
+                <span className={`w-2 h-2 shrink-0 ${isPlaying ? 'bg-signal animate-signal-blink' : 'bg-white/30'}`} />
+                {code} {currentStation.country} · {genre}
+                {currentStation.bitrate ? ` · ${currentStation.bitrate} kbps` : ''}
+              </p>
             </div>
 
-            <div className="w-full max-w-sm text-center space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-1 truncate px-4">{currentStation.name}</h2>
-              <div className="flex items-center justify-center gap-2">
-                <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-400 text-[9px] font-black uppercase tracking-widest rounded">Live</span>
-                <p className="text-slate-400 font-bold text-xs sm:text-sm tracking-wide">{currentStation.country} • {currentStation.tags?.split(',')[0]}</p>
-              </div>
-
-              {/* Main Visualizer in Expanded Mode - Reduced height and margin */}
-              <div className="h-12 sm:h-24 w-full px-8 mt-2 sm:mt-8">
-                <AudioVisualizer analyser={analyser} isPlaying={isPlaying} bars={32} height={60} />
-              </div>
+            <div className="h-16 w-full py-2">
+              <AudioVisualizer analyser={analyser} isPlaying={isPlaying} bars={40} height={56} />
             </div>
 
-            <div className="flex items-center gap-8 sm:gap-12">
-              <button type="button" onClick={() => onSkip('previous')} title="Skip Back" className="text-slate-500 hover:text-white transition-all transform active:scale-90"><SkipBack size={24} sm:size={32} /></button>
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => onSkip('previous')}
+                title="Skip Back"
+                aria-label="Emisora anterior"
+                className="w-12 h-12 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+              >
+                <SkipBack size={22} fill="currentColor" strokeWidth={0} />
+              </button>
+
               <button
                 type="button"
                 onClick={onPlayPause}
-                title={isPlaying ? "Pause" : "Play"}
-                className="w-16 h-16 sm:w-20 sm:h-20 sonic-gradient text-white rounded-full flex items-center justify-center shadow-xl shadow-cyan-500/20 hover:scale-105 active:scale-95 transition-all"
+                title={isPlaying ? 'Pause' : 'Play'}
+                className="w-20 h-20 bg-signal text-white flex items-center justify-center active:bg-white active:text-ink transition-colors"
               >
-                {isLoading ? (
-                  <div className="w-6 h-6 sm:w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
-                ) : isPlaying ? (
-                  <Pause size={30} sm:size={40} fill="currentColor" strokeWidth={0} />
-                ) : (
-                  <Play size={30} sm:size={40} className="ml-1" fill="currentColor" strokeWidth={0} />
-                )}
+                {isLoading
+                  ? <Tuning size={26} />
+                  : isPlaying
+                    ? <Pause size={30} fill="currentColor" strokeWidth={0} />
+                    : <Play size={30} fill="currentColor" strokeWidth={0} />}
               </button>
+
               <button
                 type="button"
                 onClick={() => onSkip('next')}
                 title="Skip Forward"
-                className="text-slate-500 hover:text-white transition-all transform active:scale-90"
+                aria-label="Emisora siguiente"
+                className="w-12 h-12 flex items-center justify-center text-white/60 hover:text-white transition-colors"
               >
-                <SkipForward size={24} sm:size={32} />
+                <SkipForward size={22} fill="currentColor" strokeWidth={0} />
               </button>
             </div>
 
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-6 pt-6">
               <button
+                type="button"
                 onClick={() => onToggleFavorite(currentStation)}
-                className={`p-3 transition-all duration-500 ${isFavorite
-                  ? 'text-rose-500 scale-110 animate-pulse'
-                  : 'text-white/70 hover:text-white hover:scale-105'
-                  }`}
+                className="flex items-center gap-2 text-[13px] text-white/60 hover:text-white transition-colors"
               >
-                <Heart size={24} fill={isFavorite ? "currentColor" : "none"} strokeWidth={2.5} />
+                <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} strokeWidth={2} />
+                {isFavorite ? 'Guardada' : 'Guardar'}
               </button>
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">
-                {isFavorite ? 'En tus favoritos' : 'Añadir a favoritos'}
-              </p>
-            </div>
 
-            <div className="w-full max-w-xs px-4">
-              <div className="flex items-center gap-4">
-                <VolumeX className="text-slate-500" size={16} />
+              <div className="flex items-center gap-3 flex-1">
+                <Volume2 size={16} className="text-white/40 shrink-0" />
                 <input
                   type="range" min="0" max="1" step="0.01"
                   value={volume} onChange={e => onVolumeChange(parseFloat(e.target.value))}
-                  className="flex-1 accent-cyan-400 h-1 rounded-full cursor-pointer bg-slate-800"
+                  className="flex-1"
                   title="Volume control"
+                  aria-label="Volumen"
                 />
-                <Volume2 className="text-slate-500" size={16} />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Bar (Desktop/Mini) */}
-      <div className="fixed bottom-0 left-0 right-0 z-[60] px-4 pb-4 sm:pb-6">
-        <div className="max-w-6xl mx-auto sonic-glass border border-white/10 dark:border-white/5 rounded-3xl shadow-2xl h-20 sm:h-24 px-4 sm:px-6 flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-1 min-w-0">
-            <div
-              className="w-14 h-14 rounded-xl overflow-hidden bg-slate-800 cursor-pointer shadow-lg group relative"
+      {/* Barra fija */}
+      <div className="fixed bottom-0 inset-x-0 z-[60] bg-ink text-paper">
+        <div className={`h-[3px] ${isPlaying ? 'bg-signal' : 'bg-white/15'}`} />
+
+        <div className="max-w-[1600px] mx-auto h-[72px] px-3 md:px-8 flex items-center gap-4 md:gap-8">
+          {/* Emisora */}
+          <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+            <button
+              type="button"
+              className="w-12 h-12 md:w-14 md:h-14 overflow-hidden bg-white/10 shrink-0"
               onClick={() => setIsExpanded(true)}
+              aria-label="Abrir reproductor"
             >
               <img
-                src={currentStation.favicon || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentStation.name)}&background=0D9488&color=fff&size=128&font-size=0.33&bold=true`}
-                alt="Logo"
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                src={currentStation.favicon || fallbackArt(currentStation.name, 128)}
+                alt=""
+                className="w-full h-full object-cover grayscale contrast-125"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
-                  e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentStation.name)}&background=0D9488&color=fff&size=128&font-size=0.33&bold=true`;
+                  e.currentTarget.src = fallbackArt(currentStation.name, 128);
                 }}
               />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <Maximize2 size={16} className="text-white" />
-              </div>
+            </button>
+            <div className="min-w-0">
+              <h4 className="font-semibold text-[15px] truncate leading-tight">{currentStation.name}</h4>
+              <p className="t-data text-[10px] text-white/45 truncate mt-0.5">
+                {code} {currentStation.country || 'Global'} · {genre}
+              </p>
             </div>
-            <div className="min-w-0 pr-4 hidden sm:block">
-              <h4 className="font-bold text-slate-900 dark:text-white text-base truncate tracking-tight">{currentStation.name}</h4>
-              <p className="text-xs font-bold text-cyan-500/80 uppercase tracking-widest truncate">{currentStation.country || 'Worldwide'}</p>
-            </div>
+          </div>
+
+          {/* Transporte */}
+          <div className="flex items-center gap-1 md:gap-3 shrink-0">
             <button
-              onClick={() => onToggleFavorite(currentStation)}
-              className={`p-2 rounded-lg transition-all ${isFavorite ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'
-                }`}
+              type="button"
+              onClick={() => onSkip('previous')}
+              title="Skip Back"
+              aria-label="Emisora anterior"
+              className="hidden sm:flex w-10 h-10 items-center justify-center text-white/50 hover:text-white transition-colors"
             >
-              <Heart size={20} fill={isFavorite ? "currentColor" : "none"} />
+              <SkipBack size={18} fill="currentColor" strokeWidth={0} />
+            </button>
+
+            <button
+              type="button"
+              onClick={onPlayPause}
+              title={isPlaying ? 'Pause' : 'Play'}
+              className="w-12 h-12 flex items-center justify-center bg-paper text-ink hover:bg-signal hover:text-white transition-colors"
+            >
+              {isLoading
+                ? <Tuning size={18} />
+                : isPlaying
+                  ? <Pause size={20} fill="currentColor" strokeWidth={0} />
+                  : <Play size={20} fill="currentColor" strokeWidth={0} />}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onSkip('next')}
+              title="Skip Forward"
+              aria-label="Emisora siguiente"
+              className="hidden sm:flex w-10 h-10 items-center justify-center text-white/50 hover:text-white transition-colors"
+            >
+              <SkipForward size={18} fill="currentColor" strokeWidth={0} />
             </button>
           </div>
 
-          <div className="flex flex-col items-center flex-1 space-y-2">
-            <div className="flex items-center gap-8">
-              <button type="button" onClick={() => onSkip('previous')} title="Skip Back" className="text-slate-400 hover:text-cyan-500 transition-colors hidden sm:block"><SkipBack size={20} /></button>
-              <button
-                type="button"
-                onClick={onPlayPause}
-                title={isPlaying ? "Pause" : "Play"}
-                className={`
-                    w-12 h-12 rounded-full flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-lg
-                    ${isPlaying ? 'bg-white dark:bg-slate-100 text-slate-900' : 'sonic-gradient text-white'}
-                  `}
-              >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-slate-900/20 border-t-slate-900 rounded-full animate-spin"></div>
-                ) : isPlaying ? (
-                  <Pause size={24} fill="currentColor" strokeWidth={0} />
-                ) : (
-                  <Play size={24} className="ml-1" fill="currentColor" strokeWidth={0} />
-                )}
-              </button>
-              <button type="button" onClick={() => onSkip('next')} title="Skip Forward" className="text-slate-400 hover:text-cyan-500 transition-colors hidden sm:block"><SkipForward size={20} /></button>
+          {/* Medidor y volumen */}
+          <div className="hidden md:flex items-center gap-8 flex-1 justify-end">
+            <div className="h-8 w-[200px] lg:w-[280px]">
+              <AudioVisualizer analyser={analyser} isPlaying={isPlaying} bars={36} height={32} />
             </div>
 
-            <div className="hidden sm:flex items-center gap-3 w-full max-w-[280px]">
-              <Activity size={12} className={isPlaying ? "text-cyan-500 animate-pulse" : "text-slate-600"} />
-              <div className="flex-1 h-8 bg-black/20 rounded-lg overflow-hidden border border-white/5">
-                <AudioVisualizer analyser={analyser} isPlaying={isPlaying} bars={24} height={32} />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-6 flex-1 justify-end">
-            <div className="hidden lg:flex items-center gap-3 w-32 group">
-              <Volume2 className="text-slate-400 group-hover:text-cyan-500 transition-colors" size={18} />
+            <div className="hidden lg:flex items-center gap-3 w-32">
+              <Volume2 size={16} className="text-white/40 shrink-0" />
               <input
                 type="range" min="0" max="1" step="0.01"
                 value={volume} onChange={e => onVolumeChange(parseFloat(e.target.value))}
-                className="w-full accent-cyan-500 h-1 cursor-pointer bg-slate-200 dark:bg-slate-800 rounded-full"
+                className="w-full"
                 title="Volume control"
+                aria-label="Volumen"
               />
             </div>
+
+            <button
+              type="button"
+              onClick={() => onToggleFavorite(currentStation)}
+              aria-label={isFavorite ? 'Quitar de favoritos' : 'Guardar en favoritos'}
+              className="w-10 h-10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
+            >
+              <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} strokeWidth={2} />
+            </button>
+          </div>
+
+          {/* Accesos en móvil */}
+          <div className="flex md:hidden items-center gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => onToggleFavorite(currentStation)}
+              aria-label={isFavorite ? 'Quitar de favoritos' : 'Guardar en favoritos'}
+              className="w-10 h-10 flex items-center justify-center text-white/50"
+            >
+              <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} strokeWidth={2} />
+            </button>
             <button
               type="button"
               title="Expand player"
-              className="p-2 text-slate-400 hover:text-white bg-slate-100 dark:bg-slate-800/50 rounded-xl lg:hidden"
+              aria-label="Abrir reproductor"
+              className="w-10 h-10 flex items-center justify-center text-white/50"
               onClick={() => setIsExpanded(true)}
             >
               <ChevronUp size={20} />

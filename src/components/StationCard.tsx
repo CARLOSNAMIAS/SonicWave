@@ -10,6 +10,7 @@ import { Play, Pause, Heart, Music2 } from 'lucide-react';
  * @property {boolean} isFavorite - Si esta emisora está en los favoritos del usuario.
  * @property {(station: RadioStation) => void} onPlay - Callback para reproducir o pausar la emisora.
  * @property {(station: RadioStation) => void} onToggleFavorite - Callback para agregar o eliminar la emisora de favoritos.
+ * @property {number} [index] - Posición de la emisora dentro del listado (la lista viene ordenada por popularidad).
  */
 interface StationCardProps {
   station: RadioStation;
@@ -17,104 +18,130 @@ interface StationCardProps {
   isFavorite: boolean;
   onPlay: (station: RadioStation) => void;
   onToggleFavorite: (station: RadioStation) => void;
+  index?: number;
 }
 
+const fallbackArt = (name: string, size: number) =>
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=000000&color=E9E6DF&size=${size}&font-size=0.34&bold=true&format=png`;
+
 /**
- * Un componente de tarjeta que muestra información sobre una única emisora de radio.
- * Muestra el nombre, el país y la imagen de la emisora. También proporciona controles
- * para reproducir/pausar la emisora y para agregarla/eliminarla de favoritos.
+ * Una fila del índice de emisoras.
+ * Cada emisora ocupa un renglón alineado a las mismas columnas: posición, carátula,
+ * nombre, procedencia y calidad de transmisión. La emisora que suena invierte la fila
+ * sobre el color de señal; es el único momento en que aparece color en el listado.
  */
 const StationCard: React.FC<StationCardProps> = ({
   station,
   isPlaying,
   isFavorite,
   onPlay,
-  onToggleFavorite
+  onToggleFavorite,
+  index
 }) => {
+  const genre = station.tags ? station.tags.split(',')[0] : 'Radio';
+  const code = (station.countrycode || station.country || '--').slice(0, 2).toUpperCase();
+
   return (
     <div
       onClick={() => onPlay(station)}
       className={`
-        group relative p-3 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/50
-        hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-500 cursor-pointer
-        ${isPlaying ? 'ring-2 ring-cyan-500/50 bg-slate-50 dark:bg-slate-800/60' : ''}
+        group grid grid-cols-[2.5rem_3.5rem_1fr_auto] md:grid-cols-[3.5rem_4rem_1fr_7rem_5rem_auto]
+        items-center gap-3 md:gap-5 px-2 md:px-3 py-4 cursor-pointer
+        transition-colors duration-150
+        ${isPlaying
+          ? 'bg-signal text-white'
+          : 'hover:bg-black/[0.04] dark:hover:bg-white/[0.05]'
+        }
       `}
     >
-      <div className="relative aspect-square mb-4 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shadow-inner">
+      {/* Posición en el listado */}
+      <span className={`t-data text-[11px] md:text-xs ${isPlaying ? 'text-white' : 'text-meta-c'}`}>
+        {typeof index === 'number' ? String(index).padStart(3, '0') : '—'}
+      </span>
+
+      {/* Carátula */}
+      <div className="w-12 h-12 md:w-16 md:h-16 overflow-hidden bg-black/5 dark:bg-white/5 shrink-0">
         {station.favicon ? (
           <img
             src={station.favicon}
-            alt={station.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            alt=""
+            loading="lazy"
+            className={`w-full h-full object-cover ${isPlaying ? 'grayscale contrast-125' : ''}`}
             onError={(e) => {
               e.currentTarget.onerror = null;
-              e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(station.name)}&background=0D9488&color=fff&size=256&font-size=0.33&bold=true`;
+              e.currentTarget.src = fallbackArt(station.name, 128);
             }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600">
-            <Music2 size={48} strokeWidth={1.5} />
-          </div>
-        )}
-
-        {/* Superposición del botón de reproducción */}
-        <div className={`
-          absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300
-          ${isPlaying ? 'opacity-100' : ''}
-        `}>
-          <div className={`
-            p-4 rounded-full shadow-2xl transition-all duration-500 transform
-            ${isPlaying ? 'sonic-gradient scale-110' : 'bg-white/90 dark:bg-slate-900/90 scale-90 group-hover:scale-100'}
-            text-${isPlaying ? 'white' : 'cyan-500'}
-          `}>
-            {isPlaying ? <Pause size={24} fill="currentColor" strokeWidth={0} /> : <Play size={24} fill="currentColor" strokeWidth={0} className="ml-1" />}
-          </div>
-        </div>
-
-        {isPlaying && (
-          <div className="absolute bottom-3 left-3 flex items-end gap-1 h-4">
-            {[0, 0.2, 0.4].map((delay) => (
-              <div
-                key={delay}
-                className="w-1 bg-white animate-sound-wave rounded-full"
-                style={{ animationDelay: `${delay}s` }}
-              ></div>
-            ))}
+          <div className="w-full h-full flex items-center justify-center text-meta-c">
+            <Music2 size={22} strokeWidth={1.5} />
           </div>
         )}
       </div>
 
-      <div className="px-1 pb-2">
-        <h3 className="font-bold text-slate-900 dark:text-white truncate text-[15px] tracking-tight mb-0.5">
+      {/* Nombre y género */}
+      <div className="min-w-0">
+        <h3 className="font-semibold text-[15px] md:text-[17px] leading-tight truncate">
           {station.name}
         </h3>
-        <p className="text-slate-500 dark:text-slate-400 text-xs font-medium truncate uppercase tracking-wider">
-          {station.country || 'Global'} • {station.tags ? station.tags.split(',')[0] : 'Radio'}
+        <p className={`text-[13px] truncate ${isPlaying ? 'text-white/75' : 'text-meta-c'}`}>
+          {genre}
+          <span className="md:hidden"> · {station.country || 'Global'}</span>
         </p>
       </div>
 
-      <button
-        type="button"
-        aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleFavorite(station);
-        }}
-        className={`
-          absolute top-4 right-4 p-2.5 rounded-full transition-all duration-300 shadow-xl
-          ${isFavorite
-            ? 'text-rose-500 bg-white dark:bg-slate-900 scale-110 shadow-rose-500/20'
-            : 'text-white bg-black/40 backdrop-blur-md opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-black/60'
-          }
-        `}
-      >
-        <Heart
-          size={18}
-          fill={isFavorite ? "currentColor" : "none"}
-          strokeWidth={2.5}
-          className={isFavorite ? 'animate-in zoom-in-50 duration-300' : ''}
-        />
-      </button>
+      {/* Procedencia */}
+      <div className="hidden md:block min-w-0">
+        <p className={`t-data text-[11px] truncate ${isPlaying ? 'text-white/75' : 'text-meta-c'}`}>
+          {code} {station.country || 'Global'}
+        </p>
+      </div>
+
+      {/* Calidad de transmisión, o el nivel de señal si está sonando */}
+      <div className="hidden md:block">
+        {isPlaying ? (
+          <div className="flex items-end gap-[3px] h-4" aria-label="Sonando">
+            {[0, 0.15, 0.3, 0.45].map((delay) => (
+              <div
+                key={delay}
+                className="w-[3px] bg-white animate-sound-wave"
+                style={{ animationDelay: `${delay}s` }}
+              />
+            ))}
+          </div>
+        ) : (
+          <span className="t-data text-[11px] text-meta-c">
+            {station.bitrate ? `${station.bitrate} kbps` : '—'}
+          </span>
+        )}
+      </div>
+
+      {/* Acciones */}
+      <div className="flex items-center gap-1 md:gap-2">
+        <button
+          type="button"
+          aria-label={isFavorite ? 'Quitar de favoritos' : 'Guardar en favoritos'}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite(station);
+          }}
+          className={`w-9 h-9 flex items-center justify-center transition-colors ${isPlaying ? 'text-white' : 'text-meta-c hover:text-ink dark:hover:text-paper'
+            }`}
+        >
+          <Heart size={17} fill={isFavorite ? 'currentColor' : 'none'} strokeWidth={2} />
+        </button>
+
+        <span
+          className={`w-9 h-9 md:w-11 md:h-11 flex items-center justify-center transition-colors ${isPlaying
+            ? 'bg-white text-ink'
+            : 'surface text-ink dark:text-paper group-hover:bg-ink group-hover:text-paper dark:group-hover:bg-paper dark:group-hover:text-ink'
+            }`}
+        >
+          {isPlaying
+            ? <Pause size={16} fill="currentColor" strokeWidth={0} />
+            : <Play size={16} fill="currentColor" strokeWidth={0} />}
+        </span>
+      </div>
     </div>
   );
 };

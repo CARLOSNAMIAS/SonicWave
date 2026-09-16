@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------------
+   SonicWave: sistema visual
+
+   Negro, papel y una sola señal naranja. Sin degradados, sin sombras y sin
+   esquinas redondeadas: la jerarquía la marcan el tamaño del tipo, el espacio
+   en blanco y las reglas de 1px.
+   ------------------------------------------------------------------------ */
+
+:root {
+  --signal: 255 59 0; /* naranja de transmisión */
+  --paper: #e9e6df;
+  --ink: #000000;
+  --rule: rgba(0, 0, 0, 0.16);
+  --meta: #6b6862;
+}
+
+html.dark {
+  --rule: rgba(233, 230, 223, 0.18);
+  --meta: #8c8880;
+}
+
+/* El color de fondo vive en <html> para que el espectro de fondo (canvas en
+   z-index negativo) quede por encima de él y por debajo del contenido. */
+html {
+  background-color: var(--paper);
+}
+
+html.dark {
+  background-color: var(--ink);
+}
+
+body {
+  font-family: 'Archivo', system-ui, -apple-system, sans-serif;
+  font-variation-settings: 'wdth' 100, 'wght' 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* --- Roles tipográficos -------------------------------------------------- */
+
+/* Titulares: grotesca condensada, apretada y en caja alta.
+   Todo el peso visual de la página vive aquí. */
+.t-display {
+  font-family: 'Archivo', system-ui, sans-serif;
+  font-variation-settings: 'wdth' 70, 'wght' 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.84;
+}
+
+/* Datos: cifras, códigos de país, frecuencias e índices.
+   Tabular para que las columnas se alineen solas. */
+.t-data {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* --- Superficies: la separación se hace con espacio, no con líneas --------
+
+   No hay reglas ni bordes en la interfaz. Cuando un elemento necesita
+   distinguirse del fondo (un botón, una celda seleccionable), se apoya en una
+   superficie apenas teñida; cuando flota por encima de la página (el panel del
+   DJ), en una superficie elevada. */
+.surface {
+  background-color: rgba(0, 0, 0, 0.055);
+}
+html.dark .surface {
+  background-color: rgba(233, 230, 223, 0.07);
+}
+
+.surface-raised {
+  background-color: #ffffff;
+}
+html.dark .surface-raised {
+  background-color: #141414;
+}
+
+.text-meta-c {
+  color: var(--meta);
+}
+
+/* --- Base ---------------------------------------------------------------- */
+::selection {
+  background: rgb(var(--signal));
+  color: #fff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--rule);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--signal));
+}
+
+:focus-visible {
+  outline: 2px solid rgb(var(--signal));
+  outline-offset: 2px;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Controles de volumen: riel y pulgar rectangulares */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+input[type='range']::-webkit-slider-runnable-track {
+  height: 2px;
+  background: var(--rule);
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 3px;
+  height: 14px;
+  margin-top: -6px;
+  background: rgb(var(--signal));
+  border: 0;
+}
+input[type='range']::-moz-range-track {
+  height: 2px;
+  background: var(--rule);
+}
+input[type='range']::-moz-range-thumb {
+  width: 3px;
+  height: 14px;
+  border: 0;
+  border-radius: 0;
+  background: rgb(var(--signal));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
