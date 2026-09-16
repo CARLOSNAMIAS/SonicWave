@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { RadioStation } from '@/types';
-import { Music, Play, X, Star, Sparkles } from 'lucide-react';
+import { Music, Play, X } from 'lucide-react';
 
 interface RecommendationToastProps {
     station: RadioStation;
@@ -8,6 +8,10 @@ interface RecommendationToastProps {
     onPlay: (station: RadioStation) => void;
 }
 
+/**
+ * Aviso lateral con la emisora que el DJ propone a partir de lo que acabas de guardar.
+ * Se retira solo a los ocho segundos.
+ */
 const RecommendationToast: React.FC<RecommendationToastProps> = ({ station, onClose, onPlay }) => {
     const [isVisible, setIsVisible] = useState(false);
 
@@ -15,7 +19,7 @@ const RecommendationToast: React.FC<RecommendationToastProps> = ({ station, onCl
         const timer = setTimeout(() => setIsVisible(true), 200);
         const autoCloseTimer = setTimeout(() => {
             setIsVisible(false);
-            setTimeout(onClose, 800);
+            setTimeout(onClose, 500);
         }, 8000);
 
         return () => {
@@ -26,70 +30,59 @@ const RecommendationToast: React.FC<RecommendationToastProps> = ({ station, onCl
 
     const handleClose = () => {
         setIsVisible(false);
-        setTimeout(onClose, 900);
+        setTimeout(onClose, 500);
     };
 
     return (
         <div
-            className={`fixed top-28 right-4 z-50 transition-all duration-700 ease-out transform ${isVisible ? 'translate-x-0 opacity-100 scale-100' : 'translate-x-12 opacity-0 scale-95'
+            className={`fixed top-20 right-0 z-50 w-[320px] max-w-[calc(100vw-2rem)] transition-transform duration-300 ease-out ${isVisible ? 'translate-x-0' : 'translate-x-full'
                 }`}
         >
-            <div className="relative group">
-                {/* Subtle dynamic background glow */}
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/30 to-indigo-500/30 rounded-2xl blur opacity-50 group-hover:opacity-100 transition duration-1000"></div>
-
-                <div className="relative sonic-glass dark:bg-slate-900/90 border border-slate-200/50 dark:border-white/10 p-3.5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex items-center gap-3.5 min-w-[280px] max-w-sm backdrop-blur-xl">
-                    {/* Station Favicon */}
-                    <div className="relative shrink-0">
-                        <div className="w-12 h-12 rounded-xl overflow-hidden shadow-md border border-black/5 dark:border-white/5 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                            {station.favicon ? (
-                                <img
-                                    src={station.favicon}
-                                    className="w-full h-full object-cover"
-                                    alt={station.name}
-                                    onError={(e) => {
-                                        e.currentTarget.onerror = null;
-                                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(station.name)}&background=0D9488&color=fff&size=128&font-size=0.33&bold=true`;
-                                    }}
-                                />
-                            ) : (
-                                <Music size={20} className="text-slate-400" />
-                            )}
-                        </div>
-                        <div className="absolute -bottom-1 -right-1 bg-cyan-500 text-white p-1 rounded-full shadow-lg border-2 border-white dark:border-slate-900">
-                            <Star size={8} fill="currentColor" />
-                        </div>
-                    </div>
-
-                    {/* Content info */}
-                    <div className="flex-1 min-w-0 pr-4">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                            <Sparkles size={10} className="text-cyan-500" fill="currentColor" />
-                            <p className="text-[9px] font-black uppercase tracking-[0.15em] text-cyan-500/80">Sugerencia IA</p>
-                        </div>
-                        <h4 className="font-bold text-slate-800 dark:text-white truncate text-sm leading-tight mb-0.5">{station.name}</h4>
-                        <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate mb-2">
-                            <span className="truncate">{station.country || 'Global'}</span>
-                            <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700 shrink-0"></span>
-                            <span className="truncate opacity-75">{station.tags?.split(',')[0] || 'Radio'}</span>
-                        </div>
-
-                        <button
-                            onClick={() => onPlay(station)}
-                            className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white sonic-gradient px-4 py-1.5 rounded-lg active:scale-95 transition-all shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40"
-                        >
-                            <Play size={10} fill="currentColor" /> Escuchar
-                        </button>
-                    </div>
-
-                    {/* Refined close button */}
+            <div className="bg-ink text-paper border-l-[3px] border-signal">
+                <div className="flex items-start justify-between px-4 pt-3">
+                    <p className="t-data text-[10px] text-white/50">Te puede sonar</p>
                     <button
+                        type="button"
                         onClick={handleClose}
-                        className="absolute top-3 right-3 p-1 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors flex items-center justify-center rounded-lg hover:bg-rose-500/10"
+                        aria-label="Descartar sugerencia"
+                        className="text-white/40 hover:text-white transition-colors -mr-1"
                     >
-                        <X size={14} />
+                        <X size={15} />
                     </button>
                 </div>
+
+                <div className="flex items-center gap-3 px-4 py-3">
+                    <div className="w-12 h-12 shrink-0 bg-white/10 flex items-center justify-center overflow-hidden">
+                        {station.favicon ? (
+                            <img
+                                src={station.favicon}
+                                className="w-full h-full object-cover grayscale contrast-125"
+                                alt=""
+                                onError={(e) => {
+                                    e.currentTarget.onerror = null;
+                                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(station.name)}&background=000000&color=E9E6DF&size=128&font-size=0.34&bold=true&format=png`;
+                                }}
+                            />
+                        ) : (
+                            <Music size={18} className="text-white/40" />
+                        )}
+                    </div>
+
+                    <div className="min-w-0">
+                        <h4 className="font-semibold text-[15px] leading-tight truncate">{station.name}</h4>
+                        <p className="t-data text-[10px] text-white/45 truncate mt-1">
+                            {station.country || 'Global'} · {station.tags?.split(',')[0] || 'Radio'}
+                        </p>
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={() => onPlay(station)}
+                    className="w-full h-11 flex items-center justify-center gap-2 bg-signal text-white text-[14px] font-semibold hover:bg-white hover:text-ink transition-colors"
+                >
+                    <Play size={14} fill="currentColor" strokeWidth={0} /> Escuchar ahora
+                </button>
             </div>
         </div>
     );

@@ -1,17 +1,17 @@
 import React from 'react';
 
 /**
- * A skeleton loader component that mimics the layout of a StationCard.
- * It's used to provide a visual placeholder while station data is being fetched,
- * improving the user experience by indicating that content is loading.
+ * Marcador de posición con la misma retícula que una fila de emisora.
+ * Ocupa exactamente el alto definitivo para que la lista no salte al cargar.
  */
 const SkeletonCard: React.FC = () => {
   return (
-    <div className="p-3 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/50">
-      <div className="relative aspect-square mb-4 rounded-xl bg-slate-200 dark:bg-slate-800 animate-pulse"></div>
-      <div className="px-1 pb-2">
-        <div className="h-4 w-3/4 mb-2 bg-slate-200 dark:bg-slate-800 animate-pulse rounded"></div>
-        <div className="h-3 w-1/2 bg-slate-200 dark:bg-slate-800 animate-pulse rounded"></div>
+    <div className="grid grid-cols-[2.5rem_3.5rem_1fr] md:grid-cols-[3.5rem_4rem_1fr] items-center gap-3 md:gap-5 px-2 md:px-3 py-4">
+      <span className="t-data text-[11px] text-meta-c">···</span>
+      <div className="skeleton-block w-12 h-12 md:w-16 md:h-16 bg-black/10 dark:bg-white/10 animate-pulse"></div>
+      <div className="space-y-2">
+        <div className="skeleton-block h-4 w-2/5 bg-black/10 dark:bg-white/10 animate-pulse"></div>
+        <div className="skeleton-block h-3 w-1/4 bg-black/10 dark:bg-white/10 animate-pulse"></div>
       </div>
     </div>
   );

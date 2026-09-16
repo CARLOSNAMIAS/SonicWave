@@ -40,104 +40,75 @@
       property="twitter:image"
       content="https://sonicwave-radio.vercel.app/compartir.png"
     />
-    <meta name="theme-color" content="#22D3EE" />
+    <meta name="theme-color" content="#000000" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" href="/faviconn.png" />
     <link rel="apple-touch-icon" href="/faviconn.png" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              sonic: {
-                start: "#22D3EE", // Cyan 400
-                end: "#818CF8", // Indigo 400
-                dark: "#0F172A", // Slate 900
-                darker: "#020617", // Slate 950
-              },
-              primary: {
-                DEFAULT: "#22D3EE",
-                hover: "#06B6D4",
-              },
-            },
-            animation: {
-              "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-              "bounce-slow": "bounceSlow 3s ease-in-out infinite",
-              "sound-wave": "soundWave 1.2s ease-in-out infinite",
-              shimmer: "shimmer 2s linear infinite",
-            },
-            keyframes: {
-              soundWave: {
-                "0%, 100%": { height: "20%" },
-                "50%": { height: "100%" },
-              },
-              bounceSlow: {
-                "0%, 100%": { transform: "translateY(-5%)" },
-                "50%": { transform: "translateY(0)" },
-              },
-              shimmer: {
-                "0%": { backgroundPosition: "-200% 0" },
-                "100%": { backgroundPosition: "200% 0" },
-              },
-            },
-          },
-        },
-      };
-    </script>
+
+    <!-- Tipografía: Archivo (grotesca variable, eje de anchura) + IBM Plex Mono (datos) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
-      ::-webkit-scrollbar {
-        width: 6px;
+      /* Sólo lo imprescindible antes de que cargue el CSS de la aplicación:
+         el fondo de la página y la pantalla de carga. El resto vive en
+         src/index.css, compilado junto con Tailwind. */
+      html {
+        background-color: #e9e6df;
       }
-      ::-webkit-scrollbar-track {
-        background: #020617;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #283548;
-        border-radius: 10px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #263448;
+      html.dark {
+        background-color: #000;
       }
 
-      body {
-        font-family: "Inter", system-ui, -apple-system, sans-serif;
-        -webkit-font-smoothing: antialiased;
-      }
-
-      .sonic-gradient {
-        background: linear-gradient(135deg, var(--sonic-primary, #12cae7) 0%, var(--sonic-accent, #4251d9) 100%);
-      }
-
-      .sonic-glass {
-        background: rgba(15, 23, 42, 0.7);
-        -webkit-backdrop-filter: blur(12px);
-        backdrop-filter: blur(12px);
-      }
-
-      .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-      }
-      .scale-110 {
-        transform: scale(1.1);
-      }
-
-      /* Estilos críticos para el Splash Screen (Carga instantánea) */
+      /* --- Pantalla de carga --------------------------------------------- */
       #initial-splash {
         position: fixed;
         inset: 0;
         z-index: 1000;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background-color: #020617; /* slate-950 */
-        transition: all 0.7s ease-in-out;
+        justify-content: flex-end;
+        padding: 24px;
+        background-color: #000;
+        color: #e9e6df;
+        transition: opacity 0.5s ease-out;
+      }
+
+      #initial-splash .splash-word {
+        font-family: "Archivo", system-ui, sans-serif;
+        font-variation-settings: "wdth" 68, "wght" 900;
+        text-transform: uppercase;
+        letter-spacing: -0.03em;
+        line-height: 0.8;
+        font-size: clamp(3.5rem, 22vw, 14rem);
+      }
+
+      #initial-splash .splash-meta {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #8c8880;
+      }
+
+      #initial-splash .splash-bar {
+        height: 3px;
+        background: rgb(255 59 0);
+        width: 0;
+        animation: splashTune 2.4s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+      }
+
+      @keyframes splashTune {
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
       }
     </style>
     <script type="importmap">
@@ -151,37 +122,25 @@
         }
       }
     </script>
-     <link rel="stylesheet" href="/index.css">
     <script
       async
       src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6983431049380018"
       crossorigin="anonymous"
     ></script>
   </head>
-  <body
-    class="bg-slate-50 text-slate-900 dark:bg-sonic-darker dark:text-slate-100 selection:bg-cyan-500/30"
-  >
-    <!-- Splash Screen Nativo -->
+  <!-- El color de fondo vive en <html> para que el espectro de fondo (canvas en
+       z-index negativo) quede por encima de él y por debajo del contenido. -->
+  <body class="text-ink dark:text-paper">
+    <!-- Pantalla de carga -->
     <div id="initial-splash">
-      <div class="relative flex flex-col items-center">
-        <!-- Resplandor animado -->
-        <div class="absolute -inset-8 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
-        
-        <div class="relative sonic-gradient p-6 rounded-[2.5rem] shadow-2xl shadow-cyan-500/40 animate-bounce-slow">
-          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a8 8 0 0 1 0 8.4"/><path d="M19.8 4.2a12 12 0 0 1 0 15.6"/><path d="M7.8 16.2a8 8 0 0 1 0-8.4"/><path d="M4.2 19.8a12 12 0 0 1 0-15.6"/></svg>
-        </div>
-        
-        <div class="mt-10 text-center space-y-2">
-          <h1 class="text-4xl font-black text-white tracking-tighter uppercase">
-            Sonic<span class="text-cyan-500">Wave</span>
-          </h1>
-          <div class="flex items-center justify-center gap-1">
-            <div class="w-1.5 h-1.5 bg-cyan-500/50 rounded-full animate-pulse"></div>
-            <div class="w-1.5 h-1.5 bg-cyan-500/50 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
-            <div class="w-1.5 h-1.5 bg-cyan-500/50 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
-          </div>
-        </div>
+      <div class="splash-meta" style="display: flex; justify-content: space-between; margin-bottom: 16px">
+        <span>Radio mundial</span>
+        <span>Sintonizando</span>
       </div>
+      <div class="splash-bar"></div>
+      <h1 class="splash-word" style="margin-top: 24px">
+        Sonic<br />Wave
+      </h1>
     </div>
 
     <div id="root"></div>

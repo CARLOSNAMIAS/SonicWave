@@ -9,10 +9,21 @@ interface AudioVisualizerProps {
     height?: number;
 }
 
+/** Lee el color de señal vigente (el DJ IA puede reasignarlo). */
+const readSignal = (): string => {
+    if (typeof window === 'undefined') return 'rgb(255, 59, 0)';
+    const raw = getComputedStyle(document.documentElement).getPropertyValue('--signal').trim();
+    return raw ? `rgb(${raw})` : 'rgb(255, 59, 0)';
+};
+
+/**
+ * Medidor de espectro en barras rectangulares.
+ * Sin degradados ni esquinas: la altura es el único dato que transmite.
+ */
 const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
     analyser,
     isPlaying,
-    color = '#22D3EE',
+    color,
     bars = 32,
     height = 40
 }) => {
@@ -26,19 +37,24 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
+        const ink = color || readSignal();
+
         const render = () => {
             const width = canvas.width;
-            const height = canvas.height;
+            const canvasHeight = canvas.height;
+            const gap = 2;
+            const barWidth = Math.max(1, (width / bars) - gap);
 
-            ctx.clearRect(0, 0, width, height);
+            ctx.clearRect(0, 0, width, canvasHeight);
 
             if (!isPlaying || !analyser) {
-                // Draw static baseline
-                ctx.fillStyle = `${color}33`; // 20% opacity
-                const barWidth = (width / bars) - 2;
+                // Línea de base: el medidor existe aunque no haya audio.
+                ctx.globalAlpha = 0.35;
+                ctx.fillStyle = ink;
                 for (let i = 0; i < bars; i++) {
-                    ctx.fillRect(i * (barWidth + 2), height - 2, barWidth, 2);
+                    ctx.fillRect(i * (barWidth + gap), canvasHeight - 2, barWidth, 2);
                 }
+                ctx.globalAlpha = 1;
                 animationRef.current = requestAnimationFrame(render);
                 return;
             }
@@ -47,41 +63,26 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
             const dataArray = new Uint8Array(bufferLength);
             analyser.getByteFrequencyData(dataArray);
 
-            // Check if we are getting zeros (CORS issue)
+            // Un stream sin cabeceras CORS entrega solo ceros: se simula el movimiento.
             const sum = dataArray.reduce((acc, val) => acc + val, 0);
-            const isCORSBlocked = sum === 0 && isPlaying;
+            const isCORSBlocked = sum === 0;
 
-            const barWidth = (width / bars) - 2;
+            ctx.fillStyle = ink;
             let x = 0;
 
             for (let i = 0; i < bars; i++) {
                 let barHeight;
 
                 if (isCORSBlocked) {
-                    // Fallback animation: simulate movement if CORS blocks real data
-                    barHeight = (Math.sin(Date.now() / 200 + i) + 1) * (height / 2) * (0.5 + Math.random() * 0.5);
+                    barHeight = (Math.sin(Date.now() / 220 + i * 0.6) + 1) * (canvasHeight / 2) * 0.7;
                 } else {
-                    // Use real audio data
                     const index = Math.floor((i / bars) * (bufferLength / 2));
-                    barHeight = (dataArray[index] / 255) * height;
+                    barHeight = (dataArray[index] / 255) * canvasHeight;
                 }
 
-                // Apply a minimum height for aesthetic
                 barHeight = Math.max(barHeight, 2);
-
-                // Gradient for bars
-                const gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
-                gradient.addColorStop(0, color);
-                gradient.addColorStop(1, `${color}66`);
-
-                ctx.fillStyle = gradient;
-
-                // Rounded bars (approx)
-                ctx.beginPath();
-                ctx.roundRect(x, height - barHeight, barWidth, barHeight, 4);
-                ctx.fill();
-
-                x += barWidth + 2;
+                ctx.fillRect(x, canvasHeight - barHeight, barWidth, barHeight);
+                x += barWidth + gap;
             }
 
             animationRef.current = requestAnimationFrame(render);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Radio, Moon, Sun, Menu, Sparkles } from 'lucide-react';
+import { Moon, Sun, Menu } from 'lucide-react';
 import { ViewState } from '@/types';
 
 /**
@@ -24,9 +24,18 @@ interface NavbarProps {
     isSpeaking: boolean;
 }
 
+const LINKS: { view: ViewState; label: string }[] = [
+    { view: ViewState.HOME, label: 'Descubrir' },
+    { view: ViewState.FAVORITES, label: 'Favoritos' },
+    { view: ViewState.EXPLORE, label: 'Explorar' },
+    { view: ViewState.MAGAZINE, label: 'Revista' },
+    { view: ViewState.ABOUT, label: 'Sobre nosotros' },
+];
+
 /**
- * The main integration navigation bar.
- * Handles desktop links, mobile menu trigger, theme toggling, and AI DJ activation.
+ * Barra de navegación principal.
+ * Se apoya en una sola regla inferior y en el logotipo tipográfico; la vista activa
+ * se marca con un filete de señal bajo el enlace.
  */
 const Navbar: React.FC<NavbarProps> = ({
     view,
@@ -39,84 +48,61 @@ const Navbar: React.FC<NavbarProps> = ({
     isSpeaking
 }) => {
     return (
-        <nav className="sticky top-0 z-40 sonic-glass border-b border-black/5 dark:border-white/5 h-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
-                {/* Logo Section */}
-                <div
-                    className="flex items-center space-x-3 cursor-pointer group"
+        <nav className="sticky top-0 z-40 bg-paper dark:bg-ink h-16">
+            <div className="max-w-[1600px] mx-auto px-4 md:px-8 h-full flex items-center justify-between gap-6">
+                <button
+                    type="button"
                     onClick={onLogoClick}
+                    className="t-display text-2xl md:text-[28px] shrink-0"
                 >
-                    <div className="sonic-gradient p-2 rounded-xl shadow-lg shadow-cyan-500/20 group-hover:scale-110 transition-transform">
-                        <Radio className="text-white" size={24} strokeWidth={2.5} />
-                    </div>
-                    <span className="text-2xl font-black dark:text-white tracking-tighter uppercase">
-                        Sonic<span className="text-cyan-500">Wave</span>
-                    </span>
+                    Sonicwave
+                </button>
+
+                <div className="hidden lg:flex items-center gap-8 h-full">
+                    {LINKS.map(link => (
+                        <button
+                            key={link.view}
+                            onClick={() => setView(link.view)}
+                            className={`h-full flex items-center text-[15px] font-medium border-b-2 transition-colors ${view === link.view
+                                ? 'border-signal text-ink dark:text-paper'
+                                : 'border-transparent text-meta-c hover:text-ink dark:hover:text-paper'
+                                }`}
+                        >
+                            {link.label}
+                        </button>
+                    ))}
                 </div>
 
-                {/* Desktop Navigation Links */}
-                <div className="hidden lg:flex items-center space-x-8">
-                    <button
-                        onClick={() => setView(ViewState.HOME)}
-                        className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.HOME ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-600 hover:text-cyan-500'}`}
-                    >
-                        Descubrir
-                    </button>
-                    <button
-                        onClick={() => setView(ViewState.FAVORITES)}
-                        className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.FAVORITES ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-600 hover:text-cyan-500'}`}
-                    >
-                        Favoritos
-                    </button>
-                    <button
-                        onClick={() => setView(ViewState.EXPLORE)}
-                        className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.EXPLORE ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-600 hover:text-cyan-500'}`}
-                    >
-                        Explorar
-                    </button>
-                    <button
-                        onClick={() => setView(ViewState.MAGAZINE)}
-                        className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.MAGAZINE ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-600 hover:text-cyan-500'}`}
-                    >
-                        Revista
-                    </button>
-                    <button
-                        onClick={() => setView(ViewState.ABOUT)}
-                        className={`text-[13px] font-black uppercase tracking-widest transition-all ${view === ViewState.ABOUT ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-600 hover:text-cyan-500'}`}
-                    >
-                        Sobre Nosotros
-                    </button>
-                </div>
-
-                {/* Controls Section */}
-                <div className="flex items-center space-x-4">
-                    {/* Mobile Menu Trigger */}
+                <div className="flex items-center gap-2 md:gap-3">
                     <button
                         type="button"
                         title="Abrir menú"
                         onClick={onOpenMenu}
-                        className="lg:hidden w-10 h-10 flex items-center justify-center text-slate-700 dark:text-slate-400 hover:text-cyan-500 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-transparent rounded-xl transition-all shadow-sm hover:shadow-md"
+                        className="lg:hidden w-10 h-10 flex items-center justify-center surface hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors"
                     >
-                        <Menu size={20} />
+                        <Menu size={18} />
                     </button>
 
-                    {/* Theme Toggle Button */}
-                    <button
-                        onClick={toggleTheme}
-                        className="hidden sm:flex w-10 h-10 items-center justify-center text-slate-700 dark:text-slate-400 hover:text-cyan-500 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-transparent rounded-xl transition-all shadow-sm hover:shadow-md"
-                    >
-                        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-                    </button>
-
-                    {/* AI DJ Modal Trigger */}
                     <button
                         type="button"
-                        title="Abrir asistente de IA DJ"
-                        onClick={onOpenAIModal}
-                        className={`hidden lg:flex ${isSpeaking ? 'bg-rose-500 animate-pulse' : 'sonic-gradient'} text-white px-6 py-2.5 rounded-full text-[13px] font-black uppercase tracking-widest items-center gap-2 hover:shadow-xl hover:shadow-cyan-500/20 active:scale-95 transition-all`}
+                        onClick={toggleTheme}
+                        title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                        className="hidden sm:flex w-10 h-10 items-center justify-center surface hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors"
                     >
-                        <Sparkles size={16} fill="currentColor" className={isSpeaking ? 'animate-bounce' : ''} />
-                        {isSpeaking ? 'Escuchando DJ...' : 'AI DJ'}
+                        {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                    </button>
+
+                    <button
+                        type="button"
+                        title="Pedirle emisoras al DJ"
+                        onClick={onOpenAIModal}
+                        className={`hidden lg:flex h-10 px-5 items-center gap-2.5 text-[14px] font-semibold transition-colors ${isSpeaking
+                            ? 'bg-signal text-white'
+                            : 'bg-ink text-paper dark:bg-paper dark:text-ink hover:bg-signal hover:text-white dark:hover:bg-signal dark:hover:text-white'
+                            }`}
+                    >
+                        <span className={`w-2 h-2 ${isSpeaking ? 'bg-white animate-signal-blink' : 'bg-signal'}`} />
+                        {isSpeaking ? 'Hablando' : 'Pedir al DJ'}
                     </button>
                 </div>
             </div>

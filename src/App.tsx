@@ -17,6 +17,15 @@ import RecommendationToast from '@/components/RecommendationToast';
 // Context
 import { PlayerProvider, usePlayer } from '@/context/PlayerContext';
 
+/** Convierte "#22D3EE" en "34 211 238" para usarlo en la variable --signal. */
+const hexToRgbTriplet = (hex?: string): string | null => {
+  if (!hex) return null;
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!match) return null;
+  const value = parseInt(match[1], 16);
+  return `${(value >> 16) & 255} ${(value >> 8) & 255} ${value & 255}`;
+};
+
 // Components
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -68,7 +77,7 @@ const SonicWaveApp: React.FC = () => {
   // UI State
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [recommendedStation, setRecommendedStation] = useState<RadioStation | null>(null);
-  const [searchTitle, setSearchTitle] = useState('Descubre más ondas');
+  const [searchTitle, setSearchTitle] = useState('Lo más escuchado');
   const [vibe, setVibe] = useState<{ primaryColor: string; accentColor: string; mood: string } | null>(null);
 
   // Refs
@@ -89,16 +98,20 @@ const SonicWaveApp: React.FC = () => {
 
   useEffect(() => {
     const init = async () => {
-      await loadInitialData();
-
-      // Hide native splash screen after data load
-      const splash = document.getElementById('initial-splash');
-      if (splash) {
-        // Restore delay to ensure custom animation is visible/enjoyed
-        setTimeout(() => {
-          splash.classList.add('opacity-0', 'scale-110');
-          setTimeout(() => splash.remove(), 800);
-        }, 2000);
+      try {
+        await loadInitialData();
+      } finally {
+        // La pantalla de carga se retira pase lo que pase con los datos: si la
+        // API falla, la aplicación se muestra con el aviso del error, nunca
+        // congelada sobre el logotipo.
+        const splash = document.getElementById('initial-splash');
+        if (splash) {
+          // Se mantiene hasta que la barra de sintonía termina su recorrido
+          setTimeout(() => {
+            splash.style.opacity = '0';
+            setTimeout(() => splash.remove(), 500);
+          }, 2400);
+        }
       }
     };
 
@@ -140,15 +153,27 @@ const SonicWaveApp: React.FC = () => {
 
   const loadInitialData = async () => {
     setIsFetching(true);
-    setSearchTitle('Explorando el mundo');
-    const topData = await getTopStations();
-
-    const customStationUUIDs = new Set(customVenezuelaStations.map(s => s.stationuuid));
-    const topDataWithoutCustom = topData.filter(s => !customStationUUIDs.has(s.stationuuid));
-
+    setSearchTitle('Lo más escuchado');
     setFeaturedStations([]);
-    setStations([...customVenezuelaStations, ...topDataWithoutCustom]);
-    setIsFetching(false);
+
+    try {
+      const topData = await getTopStations();
+
+      const customStationUUIDs = new Set(customVenezuelaStations.map(s => s.stationuuid));
+      const topDataWithoutCustom = topData.filter(s => !customStationUUIDs.has(s.stationuuid));
+
+      setStations([...customVenezuelaStations, ...topDataWithoutCustom]);
+      setPlaybackError(null);
+    } catch (error) {
+      // El catálogo global vive en un servidor ajeno que a veces corta la
+      // conexión. Se avisa del fallo y se deja lo que sí tenemos en local.
+      console.error('Error loading initial stations:', error);
+      setStations(customVenezuelaStations);
+      setSearchTitle('Emisoras de Venezuela');
+      setPlaybackError('No se pudo cargar el catálogo mundial: el servidor de emisoras no responde. Mientras tanto puedes escuchar estas emisoras o volver a intentarlo en un momento.');
+    } finally {
+      setIsFetching(false);
+    }
   };
 
   const shuffle = <T,>(array: T[]): T[] => {
@@ -164,7 +189,20 @@ const SonicWaveApp: React.FC = () => {
       setAiReasoning(null);
     }
     setPlaybackError(null);
-    const results = await searchStations(filters);
+
+    let results: RadioStation[];
+    try {
+      results = await searchStations(filters);
+    } catch (error) {
+      // Sin resultados no se deja el listado en carga perpetua.
+      console.error('Error searching stations:', error);
+      setStations([]);
+      setSearchTitle('Sin conexión con el catálogo');
+      setPlaybackError('No se pudo completar la búsqueda: el servidor de emisoras no responde. Inténtalo de nuevo en un momento.');
+      setView(ViewState.HOME);
+      setIsFetching(false);
+      return;
+    }
 
     // Title Logic
     if (filters.name) setSearchTitle(`Resultados para: ${filters.name}`);
@@ -173,7 +211,7 @@ const SonicWaveApp: React.FC = () => {
       const tagLabel = filters.tag.charAt(0).toUpperCase() + filters.tag.slice(1);
       setSearchTitle(`Música ${tagLabel}`);
     } else {
-      setSearchTitle('Descubre más ondas');
+      setSearchTitle('Todas las emisoras');
     }
 
     if (filters.tag === 'podcast' && filters.name === 'spanish') setSearchTitle('Podcasts en Español');
@@ -306,15 +344,14 @@ const SonicWaveApp: React.FC = () => {
 
 
   // --- Render ---
+  // El DJ puede proponer un color para la sesión; se aplica al único acento del
+  // sistema (la señal). Si el valor no es un hexadecimal válido, se ignora.
+  const signalOverride = hexToRgbTriplet(vibe?.primaryColor);
+
   return (
-    <div className="min-h-screen pb-40 bg-slate-50 dark:bg-sonic-darker transition-colors duration-500">
-      {vibe && (
-        <style>{`
-          :root {
-            --sonic-primary: ${vibe.primaryColor};
-            --sonic-accent: ${vibe.accentColor};
-          }
-        `}</style>
+    <div className="min-h-screen pb-28">
+      {signalOverride && (
+        <style>{`:root { --signal: ${signalOverride}; }`}</style>
       )}
 
       <DynamicBackground />
@@ -370,11 +407,12 @@ const SonicWaveApp: React.FC = () => {
         isSpeaking={isSpeaking}
       />
 
-      <main className="max-w-7xl mx-auto px-2 sm:px-6 py-1">
+      <main className="max-w-[1600px] mx-auto px-4 md:px-8">
         {/* Playback Error */}
         {playbackError && (
-          <div className="mb-8 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-3 text-rose-400 animate-in fade-in slide-in-from-top-4">
-            <AlertCircle size={20} /> <p className="font-bold text-sm tracking-tight">{playbackError}</p>
+          <div className="mt-6 border-l-[3px] border-signal pl-4 py-3 flex items-start gap-3">
+            <AlertCircle size={18} className="text-signal shrink-0 mt-0.5" />
+            <p className="text-[15px] leading-relaxed">{playbackError}</p>
           </div>
         )}
 
@@ -409,51 +447,37 @@ const SonicWaveApp: React.FC = () => {
 
         {view === ViewState.MAGAZINE && <MagazineView />}
 
-        {/* SEO / About Section included in Footer or below content? Original had it in main. Keeping it here. */}
-        {view === ViewState.HOME && <section className="mt-28 py-16 border-t border-slate-200 dark:border-white/5">
-          {/* This could also be extracted to an AboutSection component */}
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <h2 className="text-3xl font-black dark:text-white tracking-tight">SonicWave: La Revolución de la Radio con IA</h2>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                SonicWave AI Radio no es solo un agregador de emisoras; es tu portal inteligente al universo sonoro global. Utilizando tecnología de vanguardia y el poder de <strong>Google Gemini AI</strong>, nuestro asistente aprende de tus gustos para ofrecerte recomendaciones musicales precisas y descubrimientos que cruzan fronteras.
+        {/* Cierre editorial de la portada: explica qué es esto a quien llega de una búsqueda. */}
+        {view === ViewState.HOME && <section className="mt-24 py-16">
+          <div className="grid lg:grid-cols-[1.2fr_1fr] gap-12 lg:gap-24">
+            <div>
+              <h2 className="t-display text-[clamp(2rem,7vw,4.5rem)]">
+                Radio de todo<br />el mundo, sin<br />complicaciones
+              </h2>
+              <p className="mt-8 text-[16px] md:text-[18px] leading-relaxed text-meta-c max-w-[58ch]">
+                SonicWave reúne más de 30 000 emisoras públicas y te ayuda a moverte
+                entre ellas. Escribe lo que te apetece escuchar y el DJ, con{' '}
+                <strong className="font-semibold text-ink dark:text-paper">Google Gemini</strong>,
+                traduce esa frase en géneros, países y emisoras concretas, y te cuenta
+                por qué eligió cada una.
               </p>
-              <div className="flex flex-wrap gap-4">
-                <div className="px-4 py-2 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl border border-black/5 dark:border-white/5">
-                  <span className="text-xs font-black uppercase tracking-widest text-cyan-500">Mundial</span>
-                  <p className="text-sm font-bold dark:text-slate-200">+30,000 Emisoras</p>
-                </div>
-                <div className="px-4 py-2 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl border border-black/5 dark:border-white/5">
-                  <span className="text-xs font-black uppercase tracking-widest text-cyan-500">Inteligente</span>
-                  <p className="text-sm font-bold dark:text-slate-200">DJ Recomendador IA</p>
-                </div>
-              </div>
             </div>
-            <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 p-8 rounded-3xl border border-cyan-500/20">
-              <h3 className="text-xl font-bold dark:text-white mb-4">¿Por qué elegirnos?</h3>
-              <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
-                <li className="flex gap-3">
-                  <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
-                    <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
-                  </div>
-                  <span>Acceso gratuito a miles de géneros: desde Jazz Manouche hasta K-Pop.</span>
+
+            <ul className="space-y-8">
+              {[
+                ['Sin cuenta', 'Nada que registrar: entras y suena.'],
+                ['Tus favoritos, tuyos', 'Se guardan en este dispositivo y en ningún otro sitio.'],
+                ['El sonido, a la vista', 'El espectro de lo que suena se dibuja detrás de la página.'],
+              ].map(([title, text]) => (
+                <li key={title}>
+                  <h3 className="text-[17px] font-semibold mb-1.5">{title}</h3>
+                  <p className="text-[15px] leading-relaxed text-meta-c">{text}</p>
                 </li>
-                <li className="flex gap-3">
-                  <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
-                    <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
-                  </div>
-                  <span>Interfaz premium con visualizador rítmico en tiempo real.</span>
-                </li>
-                <li className="flex gap-3">
-                  <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center shrink-0">
-                    <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
-                  </div>
-                  <span>Privacidad garantizada y sin registros complicados.</span>
-                </li>
-              </ul>
-            </div>
+              ))}
+            </ul>
           </div>
         </section>}
+
       </main>
 
       <Footer
@@ -472,50 +496,84 @@ const SonicWaveApp: React.FC = () => {
         isSpeaking={isSpeaking}
       />
 
-      {/* Mobile Menu - could be extracted but it has loose state dependencies like setView */}
-      <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <div className="absolute inset-0 bg-black/60" onClick={() => setIsMenuOpen(false)}></div>
-        <div className={`relative z-10 w-80 h-full bg-slate-100 dark:bg-sonic-darker shadow-2xl transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-white/5">
-            <span className="text-xl font-black dark:text-white tracking-tighter uppercase">Menú</span>
-            <button type="button" onClick={() => setIsMenuOpen(false)} aria-label="Cerrar menú" title="Cerrar menú" className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-cyan-500 rounded-xl transition-all"><X size={20} /></button>
+      {/* Menú en móvil: los enlaces son el contenido, a tamaño de titular */}
+      <div className={`fixed inset-0 z-50 lg:hidden ${isMenuOpen ? '' : 'pointer-events-none'}`}>
+        <div
+          className={`absolute inset-0 bg-ink/50 transition-opacity duration-200 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`}
+          onClick={() => setIsMenuOpen(false)}
+        ></div>
+        <div className={`relative z-10 w-[min(360px,88vw)] h-full bg-paper dark:bg-ink flex flex-col transition-transform duration-200 ease-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="flex items-center justify-between h-16 px-5 shrink-0">
+            <span className="t-data text-[10px] text-meta-c">Ir a</span>
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(false)}
+              aria-label="Cerrar menú"
+              title="Cerrar menú"
+              className="w-10 h-10 flex items-center justify-center -mr-2 text-meta-c hover:text-ink dark:hover:text-paper transition-colors"
+            >
+              <X size={20} />
+            </button>
           </div>
-          <div className="p-4 sm:p-6 space-y-4">
-            <button onClick={() => { setView(ViewState.HOME); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.HOME ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Descubrir</button>
-            <button onClick={() => { setView(ViewState.FAVORITES); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.FAVORITES ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Favoritos</button>
-            <button onClick={() => { setView(ViewState.EXPLORE); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.EXPLORE ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Explorar</button>
-            <button onClick={() => { setView(ViewState.MAGAZINE); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.MAGAZINE ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Revista</button>
-            <button onClick={() => { setView(ViewState.ABOUT); setIsMenuOpen(false); }} className={`w-full text-left text-lg font-bold transition-all ${view === ViewState.ABOUT ? 'text-cyan-500' : 'text-slate-600 dark:text-slate-300 hover:text-cyan-500'}`}>Sobre Nosotros</button>
-            <div className="pt-4 border-t border-slate-200 dark:border-white/10 sm:hidden">
-              <button onClick={toggleTheme} className="w-full flex items-center justify-between text-slate-600 dark:text-slate-300 text-lg font-bold">Cambiar Tema {theme === 'dark' ? <React.Fragment>☀️</React.Fragment> : <React.Fragment>🌙</React.Fragment>}</button>
-            </div>
+
+          <nav className="flex-1 overflow-y-auto">
+            {[
+              { v: ViewState.HOME, label: 'Descubrir' },
+              { v: ViewState.FAVORITES, label: 'Favoritos' },
+              { v: ViewState.EXPLORE, label: 'Explorar' },
+              { v: ViewState.MAGAZINE, label: 'Revista' },
+              { v: ViewState.ABOUT, label: 'Sobre nosotros' },
+            ].map(item => (
+              <button
+                key={item.v}
+                onClick={() => { setView(item.v); setIsMenuOpen(false); window.scrollTo({ top: 0 }); }}
+                className={`w-full text-left px-5 py-5 t-display text-[clamp(1.5rem,7vw,2.25rem)] transition-colors ${view === item.v
+                  ? 'bg-ink text-paper dark:bg-paper dark:text-ink'
+                  : 'hover:bg-black/[0.04] dark:hover:bg-white/[0.05]'
+                  }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="shrink-0">
+            <button
+              onClick={toggleTheme}
+              className="w-full flex items-center justify-between px-5 py-4 text-[15px] font-medium"
+            >
+              {theme === 'dark' ? 'Pasar a modo claro' : 'Pasar a modo oscuro'}
+              <span className="t-data text-[10px] text-meta-c">{theme === 'dark' ? 'Oscuro' : 'Claro'}</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Floating Action Button */}
+      {/* Acceso al DJ en móvil: se puede arrastrar a donde estorbe menos */}
       <div
         className="lg:hidden fixed z-40 touch-none"
         style={{
           bottom: `${fabPosition.bottom}%`,
           right: `${fabPosition.right}%`,
           transform: 'translate(50%, 50%)',
-          transition: isDragging ? 'none' : 'all 0.3s ease',
+          transition: isDragging ? 'none' : 'bottom 0.3s ease, right 0.3s ease',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <span className="relative flex h-14 w-14">
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isSpeaking ? 'bg-rose-400' : 'bg-cyan-400'} opacity-75 ${isDragging ? 'opacity-0' : ''}`}></span>
-          <button
-            type="button"
-            onClick={() => !isDragging && setIsAIModalOpen(true)}
-            className={`relative inline-flex w-14 h-14 ${isSpeaking ? 'bg-rose-500' : 'sonic-gradient'} rounded-full items-center justify-center shadow-2xl ${isSpeaking ? 'shadow-rose-500/30' : 'shadow-cyan-500/30'} transition-transform ${isDragging ? 'scale-110' : 'active:scale-95'}`}
-          >
-            <Sparkles size={24} fill="currentColor" className={`text-white ${isSpeaking ? 'animate-bounce' : ''}`} />
-          </button>
-        </span>
+        <button
+          type="button"
+          onClick={() => !isDragging && setIsAIModalOpen(true)}
+          aria-label="Pedirle emisoras al DJ"
+          className={`w-14 h-14 flex flex-col items-center justify-center gap-1 ${isSpeaking
+            ? 'bg-signal text-white'
+            : 'bg-ink text-paper dark:bg-paper dark:text-ink'
+            }`}
+        >
+          <Sparkles size={18} fill="currentColor" strokeWidth={0} />
+          <span className="t-data text-[8px] leading-none">DJ</span>
+        </button>
       </div>
 
 
