@@ -82,7 +82,7 @@ const Footer: React.FC<FooterProps> = ({ onAboutClick, onMagazineClick }) => {
                 </div>
 
                 <div className="pt-4 pb-8 flex flex-col sm:flex-row justify-between gap-2 t-data text-[10px] text-meta-c">
-                    <span>© {new Date().getFullYear()} SonicWave AI Radio</span>
+                    <span>© {new Date().getFullYear()} SonicWave</span>
                     <span>Transmitiendo desde Venezuela para el mundo</span>
                 </div>
             </div>

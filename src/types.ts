@@ -24,22 +24,6 @@ export interface SearchFilters {
   limit?: number;
 }
 
-export interface ChatMessage {
-  role: 'user' | 'model';
-  content: string;
-}
-
-// AI Service Types
-export interface AIRecommendation {
-  searchQuery: SearchFilters;
-  reasoning: string;
-  vibe?: {
-    primaryColor: string;
-    accentColor: string;
-    mood: string;
-  };
-}
-
 export enum ViewState {
   HOME = 'HOME',
   FAVORITES = 'FAVORITES',

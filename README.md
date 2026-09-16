@@ -1,7 +1,7 @@
 # SonicWave
 
-Un índice de la radio pública mundial. Escribes lo que te apetece escuchar, un DJ
-con IA busca entre miles de emisoras y te explica por qué eligió cada una.
+Un índice de la radio pública mundial. Escribes lo que te apetece escuchar y el DJ
+lo convierte en una búsqueda entre miles de emisoras, al instante.
 
 **En directo:** [sonicwave-radio.vercel.app](https://sonicwave-radio.vercel.app/)
 
@@ -17,9 +17,11 @@ momento en que aparece color en el listado: naranja significa siempre lo mismo,
 
 - **Más de 30.000 emisoras** de 190 países, desde la base de datos comunitaria
   [Radio Browser](https://www.radio-browser.info/).
-- **Un DJ que entiende frases.** «Algo tranquilo para trabajar» o «salsa pesada
-  colombiana» se traducen en géneros y países concretos con **Google Gemini**, y
-  el DJ cuenta en voz alta el porqué de su selección.
+- **Un DJ que entiende frases.** «Algo tranquilo para trabajar» o «salsa
+  venezolana» se traducen en géneros y países concretos, y el DJ lo cuenta en voz
+  alta. Funciona dentro del navegador: sin claves, sin servicios de terceros y sin
+  coste. Su vocabulario vive en `src/data/djIntents.ts` y se amplía añadiendo
+  palabras a una lista.
 - **El sonido, a la vista.** El espectro de lo que suena se dibuja detrás de la
   página y en el reproductor, leído en tiempo real con la Web Audio API.
 - **Sin cuenta ni registro.** Los favoritos y la preferencia de tema se guardan
@@ -55,11 +57,10 @@ calidad de transmisión alineados en columnas fijas.
 - **React 19** con **Vite 6** y TypeScript
 - **Tailwind CSS 3** compilado con PostCSS (no por CDN: el sitio no depende de
   servicios externos para tener estilos)
-- **Google Gemini** para la búsqueda en lenguaje natural
 - **Web Audio API** (`AnalyserNode`) para el espectro
 - **Vitest** + Testing Library
-- Desplegado en **Vercel**, con funciones serverless en `api/` para hablar con
-  Gemini y con Radio Browser sin exponer claves
+- Desplegado en **Vercel**, con una función serverless en `api/` que hace de
+  intermediaria con Radio Browser
 
 ---
 
@@ -71,13 +72,8 @@ cd SonicWave
 npm install
 ```
 
-Crea un archivo `.env.local` con tu clave de Gemini:
-
-```env
-GEMINI_API_KEY=tu_clave_aqui
-```
-
-Y arranca el servidor de desarrollo:
+No hace falta ninguna clave ni variable de entorno. Arranca el servidor de
+desarrollo:
 
 ```bash
 npm run dev      # desarrollo en http://localhost:3000
@@ -99,10 +95,10 @@ src/
   views/          Portada, favoritos, explorador por países, sobre, revista
   hooks/          Audio, favoritos, tema, voz y metadatos de página
   context/        Estado del reproductor compartido
-  services/       Llamadas a Radio Browser y a Gemini
-  data/           Emisoras venezolanas propias y textos por país y género
+  services/       Llamadas a Radio Browser y el DJ
+  data/           Emisoras propias, textos por país y género, vocabulario del DJ
   lib/            Navegación por enlaces reales
-api/              Funciones serverless (proxy de emisoras y del DJ)
+api/              Función serverless que hace de proxy con Radio Browser
 public/           Páginas legales, iconos y ficheros del sitio
 ```
 
