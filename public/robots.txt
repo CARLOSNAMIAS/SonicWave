@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
-Sitemap: https://sonicwave-radio.vercel.app/sitemap.xml
+Disallow: /api/
 
+Sitemap: https://sonicwave-radio.vercel.app/sitemap.xml

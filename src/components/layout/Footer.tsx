@@ -1,4 +1,5 @@
 import React from 'react';
+import { MAGAZINE_ENABLED } from '@/config';
 
 /**
  * Footer component containing legal links, contact info, and disclaimer.
@@ -28,11 +29,13 @@ const Footer: React.FC<FooterProps> = ({ onAboutClick, onMagazineClick }) => {
                     <nav className="md:w-44">
                         <h2 className="t-data text-[10px] text-meta-c mb-4">Secciones</h2>
                         <ul className="space-y-2.5 text-[15px]">
-                            <li>
-                                <button onClick={onMagazineClick} className="hover:text-signal transition-colors">
-                                    Revista
-                                </button>
-                            </li>
+                            {MAGAZINE_ENABLED && (
+                                <li>
+                                    <button onClick={onMagazineClick} className="hover:text-signal transition-colors">
+                                        Revista
+                                    </button>
+                                </li>
+                            )}
                             <li>
                                 <button onClick={onAboutClick} className="hover:text-signal transition-colors">
                                     Sobre nosotros

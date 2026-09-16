@@ -19,12 +19,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://sonicwave-radio.vercel.app/?view=MAGAZINE</loc>
-    <lastmod>2026-09-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://sonicwave-radio.vercel.app/privacy.html</loc>
     <lastmod>2026-09-16</lastmod>
     <changefreq>yearly</changefreq>

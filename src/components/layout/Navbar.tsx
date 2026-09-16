@@ -1,6 +1,7 @@
 import React from 'react';
 import { Moon, Sun, Menu } from 'lucide-react';
 import { ViewState } from '@/types';
+import { MAGAZINE_ENABLED } from '@/config';
 
 /**
  * Props for the Navbar component.
@@ -28,7 +29,7 @@ const LINKS: { view: ViewState; label: string }[] = [
     { view: ViewState.HOME, label: 'Descubrir' },
     { view: ViewState.FAVORITES, label: 'Favoritos' },
     { view: ViewState.EXPLORE, label: 'Explorar' },
-    { view: ViewState.MAGAZINE, label: 'Revista' },
+    ...(MAGAZINE_ENABLED ? [{ view: ViewState.MAGAZINE, label: 'Revista' }] : []),
     { view: ViewState.ABOUT, label: 'Sobre nosotros' },
 ];
 
