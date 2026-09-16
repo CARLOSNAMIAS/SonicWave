@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// La API de emisoras falla: es el escenario que dejaba la pantalla de carga congelada.
+// La API de emisoras falla: el escenario que dejaba la aplicación inutilizable.
 vi.mock('@/services/radioService', () => ({
     getTopStations: vi.fn(() => Promise.reject(new Error('HTTP 500: Internal Server Error'))),
     searchStations: vi.fn(() => Promise.reject(new Error('HTTP 500: Internal Server Error'))),
@@ -11,38 +11,40 @@ import App from '../App';
 
 describe('Arranque de la aplicación con la API caída', () => {
     beforeEach(() => {
-        const splash = document.createElement('div');
-        splash.id = 'initial-splash';
-        document.body.appendChild(splash);
         vi.useFakeTimers({ shouldAdvanceTime: true });
     });
 
     afterEach(() => {
         vi.useRealTimers();
-        document.getElementById('initial-splash')?.remove();
     });
 
-    it('retira la pantalla de carga aunque la API falle', async () => {
+    it('muestra la interfaz de inmediato, sin pantalla de carga que la tape', () => {
         render(<App />);
 
-        await vi.advanceTimersByTimeAsync(4000);
+        // Sin esperar a los datos: la página ya está ahí.
+        expect(screen.getAllByText('Sonicwave').length).toBeGreaterThan(0);
+        // La navegación está presente tanto en la barra como en el menú móvil.
+        expect(screen.getAllByRole('link', { name: 'Explorar' }).length).toBeGreaterThan(0);
+        expect(document.getElementById('initial-splash')).toBeNull();
+    });
+
+    it('explica el fallo en lugar de quedarse en blanco', async () => {
+        render(<App />);
+
+        await vi.advanceTimersByTimeAsync(2000);
 
         await waitFor(() => {
-            expect(document.getElementById('initial-splash')).toBeNull();
+            expect(screen.getByText(/no se pudo cargar/i)).toBeInTheDocument();
         });
     });
 
-    it('muestra la aplicación y explica el fallo en lugar de quedarse en blanco', async () => {
+    it('deja escuchables las emisoras locales cuando el catálogo mundial no responde', async () => {
         render(<App />);
 
-        await vi.advanceTimersByTimeAsync(4000);
+        await vi.advanceTimersByTimeAsync(2000);
 
-        // La cabecera está presente: la aplicación arrancó.
-        expect(screen.getAllByText('Sonicwave').length).toBeGreaterThan(0);
-
-        // Y el problema se le cuenta a quien mira la pantalla.
         await waitFor(() => {
-            expect(screen.getByText(/no se pudo cargar/i)).toBeInTheDocument();
+            expect(screen.getByText('Metropolis 103.9 FM')).toBeInTheDocument();
         });
     });
 });

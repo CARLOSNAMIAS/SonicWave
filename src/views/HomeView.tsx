@@ -51,7 +51,6 @@ const QUICK_MOODS = [
 
 interface HomeViewProps {
     stations: RadioStation[];
-    featuredStations: RadioStation[];
     isFetching: boolean;
     searchTitle: string;
     aiReasoning: string | null;
@@ -70,7 +69,6 @@ interface HomeViewProps {
  */
 const HomeView: React.FC<HomeViewProps> = ({
     stations,
-    featuredStations,
     isFetching,
     searchTitle,
     aiReasoning,
@@ -94,7 +92,7 @@ const HomeView: React.FC<HomeViewProps> = ({
     };
 
     useSEO({
-        title: activeContent ? `SonicWave - ${activeContent.title}` : 'SonicWave AI Radio - Explora el Mundo',
+        title: activeContent ? `${activeContent.title} | Radio en vivo | SonicWave` : 'Radio en vivo gratis: 30.000 emisoras del mundo | SonicWave',
         description: activeContent?.description || 'Escucha gratis más de 30.000 emisoras de radio en directo de 190 países. Busca por país o género, o pídele al DJ que elija por ti.',
         path: '/'
     });
@@ -179,31 +177,6 @@ const HomeView: React.FC<HomeViewProps> = ({
                         <p key={aiReasoning} className="text-[22px] md:text-[28px] leading-[1.25] font-medium">
                             {aiReasoning}
                         </p>
-                    </div>
-                </section>
-            )}
-
-            {/* Selección editorial */}
-            {featuredStations.length > 0 && (
-                <section className="pt-16">
-                    <div className="flex items-end justify-between gap-6 mb-6">
-                        <h2 className="t-display text-[clamp(1.6rem,5vw,2.5rem)]">Selección de la casa</h2>
-                        <span className="t-data text-[10px] text-meta-c shrink-0">
-                            {featuredStations.length} emisoras
-                        </span>
-                    </div>
-                    <div className="">
-                        {featuredStations.map((s, i) => (
-                            <StationCard
-                                key={s.stationuuid}
-                                station={s}
-                                index={i + 1}
-                                isPlaying={currentStation?.stationuuid === s.stationuuid && isPlaying}
-                                isFavorite={favorites.some(f => f.stationuuid === s.stationuuid)}
-                                onPlay={handlePlayPause}
-                                onToggleFavorite={onToggleFavorite}
-                            />
-                        ))}
                     </div>
                 </section>
             )}

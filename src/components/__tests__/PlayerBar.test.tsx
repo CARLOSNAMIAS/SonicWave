@@ -21,7 +21,6 @@ describe('PlayerBar', () => {
         volume: 0.8,
         onVolumeChange: vi.fn(),
         isLoading: false,
-        audioRef: { current: null } as any,
         analyser: null,
         isFavorite: false,
         onToggleFavorite: vi.fn(),

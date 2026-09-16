@@ -22,7 +22,7 @@ const regions = [
  */
 const MapView: React.FC<MapViewProps> = ({ onPerformSearch }) => {
     useSEO({
-        title: 'Radio por países | SonicWave',
+        title: 'Radio en vivo por países: escucha emisoras del mundo | SonicWave',
         description: 'Explora emisoras de radio en directo por regiones y países: América, Europa, Asia, África y Oceanía. Elige un país y escucha lo que suena allí ahora mismo.',
         path: '/?view=EXPLORE'
     });

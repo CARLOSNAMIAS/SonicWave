@@ -12,23 +12,26 @@ const mockStation: RadioStation = {
     favicon: '',
     tags: '',
     country: 'TestLand',
+    countrycode: 'TL',
+    state: '',
+    language: 'spanish',
+    homepage: 'http://test.url',
     votes: 0,
     codec: 'MP3',
-    bitrate: 128
+    bitrate: 128,
+    clickcount: 0
 };
 
 describe('useAudioPlayer', () => {
-    let playSpy: any;
-    let pauseSpy: any;
-    let loadSpy: any;
+    // Los espías solo necesitan estar instalados; los tests no los inspeccionan.
 
     beforeEach(() => {
         localStorage.clear();
 
         // Mock de HTMLAudioElement
-        playSpy = vi.spyOn(window.HTMLMediaElement.prototype, 'play').mockImplementation(() => Promise.resolve());
-        pauseSpy = vi.spyOn(window.HTMLMediaElement.prototype, 'pause').mockImplementation(() => { });
-        loadSpy = vi.spyOn(window.HTMLMediaElement.prototype, 'load').mockImplementation(() => { });
+        vi.spyOn(window.HTMLMediaElement.prototype, 'play').mockImplementation(() => Promise.resolve());
+        vi.spyOn(window.HTMLMediaElement.prototype, 'pause').mockImplementation(() => { });
+        vi.spyOn(window.HTMLMediaElement.prototype, 'load').mockImplementation(() => { });
 
         // Mock de AudioContext si es necesario (aunque es más complejo mockear el grafo de audio)
         window.AudioContext = vi.fn().mockImplementation(() => ({

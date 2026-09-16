@@ -2,6 +2,7 @@ import React from 'react';
 import { Moon, Sun, Menu } from 'lucide-react';
 import { ViewState } from '@/types';
 import { MAGAZINE_ENABLED } from '@/config';
+import { viewPath, handleViewLinkClick } from '@/lib/navigation';
 
 /**
  * Props for the Navbar component.
@@ -51,26 +52,28 @@ const Navbar: React.FC<NavbarProps> = ({
     return (
         <nav className="sticky top-0 z-40 bg-paper dark:bg-ink h-16">
             <div className="max-w-[1600px] mx-auto px-4 md:px-8 h-full flex items-center justify-between gap-6">
-                <button
-                    type="button"
-                    onClick={onLogoClick}
+                <a
+                    href="/"
+                    onClick={(e) => handleViewLinkClick(e, ViewState.HOME, onLogoClick)}
                     className="t-display text-2xl md:text-[28px] shrink-0"
                 >
                     Sonicwave
-                </button>
+                </a>
 
                 <div className="hidden lg:flex items-center gap-8 h-full">
                     {LINKS.map(link => (
-                        <button
+                        <a
                             key={link.view}
-                            onClick={() => setView(link.view)}
+                            href={viewPath(link.view)}
+                            onClick={(e) => handleViewLinkClick(e, link.view, setView)}
+                            aria-current={view === link.view ? 'page' : undefined}
                             className={`h-full flex items-center text-[15px] font-medium border-b-2 transition-colors ${view === link.view
                                 ? 'border-signal text-ink dark:text-paper'
                                 : 'border-transparent text-meta-c hover:text-ink dark:hover:text-paper'
                                 }`}
                         >
                             {link.label}
-                        </button>
+                        </a>
                     ))}
                 </div>
 

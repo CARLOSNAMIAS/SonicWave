@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 import { useFavorites } from '@/hooks/useFavorites';
-// Note: useAudioPlayer hook usage is now replaced by PlayerProvider + usePlayer (internally in components)
-// However, App needs access to some player state if it renders the PlayerBar. 
-// See implementation below.
 import { useSpeech } from '@/hooks/useSpeech';
 import { RadioStation, ViewState, SearchFilters } from '@/types';
 import { searchStations, getTopStations } from '@/services/radioService';
@@ -35,6 +32,7 @@ import AboutView from '@/views/AboutView';
 import MagazineView from '@/views/MagazineView';
 import MapView from '@/views/MapView';
 import { MAGAZINE_ENABLED } from '@/config';
+import { viewPath, handleViewLinkClick } from '@/lib/navigation';
 import CookieBanner from '@/components/CookieBanner';
 import DynamicBackground from '@/components/DynamicBackground';
 
@@ -66,7 +64,6 @@ const SonicWaveApp: React.FC = () => {
 
   // State
   const [stations, setStations] = useState<RadioStation[]>([]);
-  const [featuredStations, setFeaturedStations] = useState<RadioStation[]>([]);
   const [isFetching, setIsFetching] = useState(false);
   const [view, setView] = useState<ViewState>(ViewState.HOME);
 
@@ -98,25 +95,11 @@ const SonicWaveApp: React.FC = () => {
   // --- Effects ---
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        await loadInitialData();
-      } finally {
-        // La pantalla de carga se retira pase lo que pase con los datos: si la
-        // API falla, la aplicación se muestra con el aviso del error, nunca
-        // congelada sobre el logotipo.
-        const splash = document.getElementById('initial-splash');
-        if (splash) {
-          // Se mantiene hasta que la barra de sintonía termina su recorrido
-          setTimeout(() => {
-            splash.style.opacity = '0';
-            setTimeout(() => splash.remove(), 500);
-          }, 2400);
-        }
-      }
-    };
-
-    init();
+    // La interfaz se pinta de inmediato y el listado muestra su propio estado de
+    // carga: no hay pantalla previa que tape la página. loadInitialData gestiona
+    // sus errores, así que un fallo de la API deja la aplicación usable con el
+    // aviso correspondiente.
+    loadInitialData();
   }, []);
 
   useEffect(() => {
@@ -158,7 +141,6 @@ const SonicWaveApp: React.FC = () => {
   const loadInitialData = async () => {
     setIsFetching(true);
     setSearchTitle('Lo más escuchado');
-    setFeaturedStations([]);
 
     try {
       const topData = await getTopStations();
@@ -423,7 +405,6 @@ const SonicWaveApp: React.FC = () => {
         {view === ViewState.HOME && (
           <HomeView
             stations={stations}
-            featuredStations={featuredStations}
             isFetching={isFetching}
             searchTitle={searchTitle}
             aiReasoning={aiReasoning}
@@ -527,16 +508,22 @@ const SonicWaveApp: React.FC = () => {
               { v: ViewState.EXPLORE, label: 'Explorar' },
               { v: ViewState.ABOUT, label: 'Sobre nosotros' },
             ].map(item => (
-              <button
+              <a
                 key={item.v}
-                onClick={() => { setView(item.v); setIsMenuOpen(false); window.scrollTo({ top: 0 }); }}
-                className={`w-full text-left px-5 py-5 t-display text-[clamp(1.5rem,7vw,2.25rem)] transition-colors ${view === item.v
+                href={viewPath(item.v)}
+                onClick={(e) => handleViewLinkClick(e, item.v, (v) => {
+                  setView(v);
+                  setIsMenuOpen(false);
+                  window.scrollTo({ top: 0 });
+                })}
+                aria-current={view === item.v ? 'page' : undefined}
+                className={`block w-full text-left px-5 py-5 t-display text-[clamp(1.5rem,7vw,2.25rem)] transition-colors ${view === item.v
                   ? 'bg-ink text-paper dark:bg-paper dark:text-ink'
                   : 'hover:bg-black/[0.04] dark:hover:bg-white/[0.05]'
                   }`}
               >
                 {item.label}
-              </button>
+              </a>
             ))}
           </nav>
 
@@ -589,7 +576,6 @@ const SonicWaveApp: React.FC = () => {
         volume={volume}
         onVolumeChange={setVolume}
         isLoading={isLoading}
-        audioRef={audioRef}
         analyser={analyserRef.current}
         isFavorite={currentStation ? favorites.some(f => f.stationuuid === currentStation.stationuuid) : false}
         onToggleFavorite={handleToggleFavorite}

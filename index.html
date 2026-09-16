@@ -5,21 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="canonical" href="https://sonicwave-radio.vercel.app/" />
     <meta name="google-adsense-account" content="ca-pub-6983431049380018" />
-    <title>SonicWave AI Radio</title>
+    <title>Radio en vivo gratis: 30.000 emisoras del mundo | SonicWave</title>
 
     <!-- Social Media Cards -->
     <meta
       name="description"
-      content="SonicWave AI Radio: Tu portal gratuito a más de 30,000 emisoras de radio globales. Descubre música nueva con nuestro DJ impulsado por IA y disfruta de una experiencia auditiva visualmente inmersiva."
+      content="Escucha radio en vivo gratis: más de 30.000 emisoras de 190 países, sin registro. Busca por país o género, o pídele al DJ que elija por ti."
     />
 
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://sonicwave-radio.vercel.app/" />
-    <meta property="og:title" content="SonicWave AI Radio" />
+    <meta property="og:title" content="Radio en vivo gratis: 30.000 emisoras del mundo" />
     <meta
       property="og:description"
-      content="Descubre estaciones de radio de todo el mundo con el poder de la IA. Tu música, a tu manera."
+      content="Más de 30.000 emisoras públicas de 190 países, gratis y sin registro. Elige por país o género, o deja que el DJ busque por ti."
     />
     <meta
       property="og:image"
@@ -32,10 +32,10 @@
       property="twitter:url"
       content="https://sonicwave-radio.vercel.app/"
     />
-    <meta property="twitter:title" content="SonicWave AI Radio" />
+    <meta property="twitter:title" content="Radio en vivo gratis: 30.000 emisoras del mundo" />
     <meta
       property="twitter:description"
-      content="Descubre estaciones de radio de todo el mundo con el poder de la IA. Tu música, a tu manera."
+      content="Más de 30.000 emisoras públicas de 190 países, gratis y sin registro. Elige por país o género, o deja que el DJ busque por ti."
     />
     <meta
       property="twitter:image"
@@ -65,53 +65,46 @@
         background-color: #000;
       }
 
-      /* --- Pantalla de carga --------------------------------------------- */
-      #initial-splash {
-        position: fixed;
-        inset: 0;
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        padding: 24px;
-        background-color: #000;
-        color: #e9e6df;
-        transition: opacity 0.5s ease-out;
-      }
-
-      #initial-splash .splash-word {
-        font-family: "Archivo", system-ui, sans-serif;
-        font-variation-settings: "wdth" 68, "wght" 900;
-        text-transform: uppercase;
-        letter-spacing: -0.03em;
-        line-height: 0.8;
-        font-size: clamp(3.5rem, 22vw, 14rem);
-      }
-
-      #initial-splash .splash-meta {
-        font-family: "IBM Plex Mono", ui-monospace, monospace;
-        font-size: 11px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: #8c8880;
-      }
-
-      #initial-splash .splash-bar {
-        height: 3px;
-        background: rgb(255 59 0);
-        width: 0;
-        animation: splashTune 2.4s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
-      }
-
-      @keyframes splashTune {
-        from {
-          width: 0;
-        }
-        to {
-          width: 100%;
-        }
-      }
     </style>
+    <!-- Datos estructurados: qué es este sitio y quién lo publica. Solo se
+         declara lo que el sitio realmente hace. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://sonicwave-radio.vercel.app/#website",
+            "url": "https://sonicwave-radio.vercel.app/",
+            "name": "SonicWave",
+            "alternateName": "SonicWave AI Radio",
+            "description": "Índice gratuito de radio en directo: más de 30.000 emisoras públicas de 190 países, con un buscador que entiende lo que quieres escuchar.",
+            "inLanguage": "es",
+            "publisher": { "@id": "https://sonicwave-radio.vercel.app/#organization" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://sonicwave-radio.vercel.app/#organization",
+            "name": "SonicWave",
+            "url": "https://sonicwave-radio.vercel.app/",
+            "logo": "https://sonicwave-radio.vercel.app/faviconn.png",
+            "sameAs": ["https://github.com/CARLOSNAMIAS"]
+          },
+          {
+            "@type": "WebApplication",
+            "name": "SonicWave",
+            "url": "https://sonicwave-radio.vercel.app/",
+            "applicationCategory": "MultimediaApplication",
+            "operatingSystem": "Cualquiera con navegador web",
+            "browserRequirements": "Requiere JavaScript",
+            "inLanguage": "es",
+            "isAccessibleForFree": true,
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+          }
+        ]
+      }
+    </script>
+
     <script type="importmap">
       {
         "imports": {
@@ -132,18 +125,6 @@
   <!-- El color de fondo vive en <html> para que el espectro de fondo (canvas en
        z-index negativo) quede por encima de él y por debajo del contenido. -->
   <body class="text-ink dark:text-paper">
-    <!-- Pantalla de carga -->
-    <div id="initial-splash">
-      <div class="splash-meta" style="display: flex; justify-content: space-between; margin-bottom: 16px">
-        <span>Radio mundial</span>
-        <span>Sintonizando</span>
-      </div>
-      <div class="splash-bar"></div>
-      <h1 class="splash-word" style="margin-top: 24px">
-        Sonic<br />Wave
-      </h1>
-    </div>
-
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
 
