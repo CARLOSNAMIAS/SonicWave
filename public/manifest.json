@@ -1,7 +1,7 @@
 {
-  "name": "SonicWave AI Radio",
+  "name": "SonicWave Radio",
   "short_name": "SonicWave",
-  "description": "Global radio streaming powered by Radio Browser API and Gemini AI for smart recommendations.",
+  "description": "Más de 30.000 emisoras de radio en directo de todo el mundo, gratis y sin registro.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#020617",
