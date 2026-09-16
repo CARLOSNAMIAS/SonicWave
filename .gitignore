@@ -26,3 +26,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Variables de entorno: la clave de Gemini nunca debe subirse al repositorio.
+# `*.local` ya cubre .env.local, pero no un .env a secas.
+.env
+.env.*
+!.env.example
