@@ -1,0 +1,148 @@
+/* Hoja compartida por las páginas legales (privacidad, términos y cookies).
+   Mismo sistema visual que la aplicación, en CSS plano: son páginas estáticas
+   que deben poder mostrarse sin JavaScript ni dependencias externas. */
+
+:root {
+  --paper: #e9e6df;
+  --ink: #000000;
+  --meta: #6b6862;
+  --signal: #ff3b00;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: var(--paper);
+}
+
+body {
+  margin: 0;
+  padding: 24px 24px 96px;
+  max-width: 720px;
+  margin-inline: auto;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: 'Archivo', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (min-width: 768px) {
+  body {
+    padding: 40px 24px 120px;
+  }
+}
+
+a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--signal);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+.site-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 64px;
+}
+
+.wordmark {
+  font-variation-settings: 'wdth' 70, 'wght' 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  font-size: 22px;
+  text-decoration: none;
+}
+
+.meta {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--meta);
+}
+
+h1 {
+  font-variation-settings: 'wdth' 70, 'wght' 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.86;
+  font-size: clamp(2.5rem, 11vw, 5rem);
+  margin: 0 0 40px;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 48px 0 12px;
+}
+
+p,
+li {
+  color: #2b2926;
+  margin: 0 0 16px;
+  max-width: 68ch;
+}
+
+strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+ul {
+  padding-left: 20px;
+}
+
+li {
+  margin-bottom: 8px;
+}
+
+.page-footer {
+  margin-top: 80px;
+  padding-top: 24px;
+}
+
+.page-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+  html,
+  body {
+    background-color: var(--ink);
+    color: var(--paper);
+  }
+
+  a {
+    color: var(--paper);
+  }
+
+  p,
+  li {
+    color: #c9c5bd;
+  }
+
+  strong {
+    color: var(--paper);
+  }
+
+  .meta {
+    color: #8c8880;
+  }
+}

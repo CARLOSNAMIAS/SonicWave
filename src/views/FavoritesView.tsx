@@ -1,6 +1,7 @@
 import React from 'react';
 import { RadioStation } from '@/types';
 import { usePlayer } from '@/context/PlayerContext';
+import { useSEO } from '@/hooks/useSEO';
 import StationCard from '@/components/StationCard';
 
 interface FavoritesViewProps {
@@ -13,6 +14,13 @@ interface FavoritesViewProps {
  */
 const FavoritesView: React.FC<FavoritesViewProps> = ({ favorites, onToggleFavorite }) => {
     const { currentStation, isPlaying, handlePlayPause } = usePlayer();
+
+    // Lista personal guardada en el navegador: nada que indexar, pero el título
+    // de la pestaña debe decir dónde está quien la abre.
+    useSEO({
+        title: 'Tus emisoras | SonicWave',
+        description: 'Las emisoras que has guardado en este dispositivo.'
+    });
 
     return (
         <section className="min-h-[60vh] pt-10">

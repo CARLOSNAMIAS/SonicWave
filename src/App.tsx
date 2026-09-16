@@ -119,13 +119,12 @@ const SonicWaveApp: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Initial load from URL
+    // Cada vista tiene su propia URL: al entrar directamente por ella (un enlace
+    // compartido o un resultado de búsqueda) se abre esa sección, no la portada.
     const params = new URLSearchParams(window.location.search);
     const viewParam = params.get('view');
-    if (viewParam === 'ABOUT') {
-      setView(ViewState.ABOUT);
-    } else if (viewParam === 'FAVORITES') {
-      setView(ViewState.FAVORITES);
+    if (viewParam && viewParam in ViewState) {
+      setView(ViewState[viewParam as keyof typeof ViewState]);
     }
   }, []);
 

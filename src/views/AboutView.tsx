@@ -10,8 +10,9 @@ const FACTS: { label: string; value: string }[] = [
 
 const AboutView: React.FC = () => {
     useSEO({
-        title: 'SonicWave - Sobre Nosotros',
-        description: 'Conoce la misión de SonicWave: democratizar el acceso a la radio global mediante inteligencia artificial. Descubre más de 30,000 emisoras sin fronteras.'
+        title: 'Qué es SonicWave | Radio del mundo con buscador por IA',
+        description: 'SonicWave es un índice gratuito de la radio pública mundial: más de 30.000 emisoras de 190 países, sin cuenta ni registro, con un buscador que entiende lo que quieres escuchar.',
+        path: '/?view=ABOUT'
     });
 
     return (
