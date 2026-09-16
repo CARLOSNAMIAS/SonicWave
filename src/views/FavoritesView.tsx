@@ -18,7 +18,7 @@ const FavoritesView: React.FC<FavoritesViewProps> = ({ favorites, onToggleFavori
     // Lista personal guardada en el navegador: nada que indexar, pero el título
     // de la pestaña debe decir dónde está quien la abre.
     useSEO({
-        title: 'Tus emisoras | SonicWave',
+        title: 'Tus emisoras guardadas | SonicWave',
         description: 'Las emisoras que has guardado en este dispositivo.'
     });
 

@@ -10,7 +10,7 @@ const FACTS: { label: string; value: string }[] = [
 
 const AboutView: React.FC = () => {
     useSEO({
-        title: 'Qué es SonicWave | Radio del mundo con buscador por IA',
+        title: 'Qué es SonicWave: radio del mundo gratis y sin registro',
         description: 'SonicWave es un índice gratuito de la radio pública mundial: más de 30.000 emisoras de 190 países, sin cuenta ni registro, con un buscador que entiende lo que quieres escuchar.',
         path: '/?view=ABOUT'
     });

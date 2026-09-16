@@ -35,6 +35,7 @@ import AboutView from '@/views/AboutView';
 import MagazineView from '@/views/MagazineView';
 import MapView from '@/views/MapView';
 import { MAGAZINE_ENABLED } from '@/config';
+import { viewPath, handleViewLinkClick } from '@/lib/navigation';
 import CookieBanner from '@/components/CookieBanner';
 import DynamicBackground from '@/components/DynamicBackground';
 
@@ -98,25 +99,11 @@ const SonicWaveApp: React.FC = () => {
   // --- Effects ---
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        await loadInitialData();
-      } finally {
-        // La pantalla de carga se retira pase lo que pase con los datos: si la
-        // API falla, la aplicación se muestra con el aviso del error, nunca
-        // congelada sobre el logotipo.
-        const splash = document.getElementById('initial-splash');
-        if (splash) {
-          // Se mantiene hasta que la barra de sintonía termina su recorrido
-          setTimeout(() => {
-            splash.style.opacity = '0';
-            setTimeout(() => splash.remove(), 500);
-          }, 2400);
-        }
-      }
-    };
-
-    init();
+    // La interfaz se pinta de inmediato y el listado muestra su propio estado de
+    // carga: no hay pantalla previa que tape la página. loadInitialData gestiona
+    // sus errores, así que un fallo de la API deja la aplicación usable con el
+    // aviso correspondiente.
+    loadInitialData();
   }, []);
 
   useEffect(() => {
@@ -527,16 +514,22 @@ const SonicWaveApp: React.FC = () => {
               { v: ViewState.EXPLORE, label: 'Explorar' },
               { v: ViewState.ABOUT, label: 'Sobre nosotros' },
             ].map(item => (
-              <button
+              <a
                 key={item.v}
-                onClick={() => { setView(item.v); setIsMenuOpen(false); window.scrollTo({ top: 0 }); }}
-                className={`w-full text-left px-5 py-5 t-display text-[clamp(1.5rem,7vw,2.25rem)] transition-colors ${view === item.v
+                href={viewPath(item.v)}
+                onClick={(e) => handleViewLinkClick(e, item.v, (v) => {
+                  setView(v);
+                  setIsMenuOpen(false);
+                  window.scrollTo({ top: 0 });
+                })}
+                aria-current={view === item.v ? 'page' : undefined}
+                className={`block w-full text-left px-5 py-5 t-display text-[clamp(1.5rem,7vw,2.25rem)] transition-colors ${view === item.v
                   ? 'bg-ink text-paper dark:bg-paper dark:text-ink'
                   : 'hover:bg-black/[0.04] dark:hover:bg-white/[0.05]'
                   }`}
               >
                 {item.label}
-              </button>
+              </a>
             ))}
           </nav>
 

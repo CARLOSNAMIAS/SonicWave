@@ -1,5 +1,7 @@
 import React from 'react';
 import { MAGAZINE_ENABLED } from '@/config';
+import { ViewState } from '@/types';
+import { viewPath, handleViewLinkClick } from '@/lib/navigation';
 
 /**
  * Footer component containing legal links, contact info, and disclaimer.

@@ -94,7 +94,7 @@ const HomeView: React.FC<HomeViewProps> = ({
     };
 
     useSEO({
-        title: activeContent ? `SonicWave - ${activeContent.title}` : 'SonicWave AI Radio - Explora el Mundo',
+        title: activeContent ? `${activeContent.title} | Radio en vivo | SonicWave` : 'Radio en vivo gratis: 30.000 emisoras del mundo | SonicWave',
         description: activeContent?.description || 'Escucha gratis más de 30.000 emisoras de radio en directo de 190 países. Busca por país o género, o pídele al DJ que elija por ti.',
         path: '/'
     });
