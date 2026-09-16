@@ -33,7 +33,6 @@ export interface ChatMessage {
 export interface AIRecommendation {
   searchQuery: SearchFilters;
   reasoning: string;
-  suggestedStationNames?: string[];
   vibe?: {
     primaryColor: string;
     accentColor: string;
@@ -45,7 +44,6 @@ export enum ViewState {
   HOME = 'HOME',
   FAVORITES = 'FAVORITES',
   EXPLORE = 'EXPLORE',
-  AI_RECOMMEND = 'AI_RECOMMEND',
   ABOUT = 'ABOUT',
   MAGAZINE = 'MAGAZINE',
 }

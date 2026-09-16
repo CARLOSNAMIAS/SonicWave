@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 import { useFavorites } from '@/hooks/useFavorites';
-// Note: useAudioPlayer hook usage is now replaced by PlayerProvider + usePlayer (internally in components)
-// However, App needs access to some player state if it renders the PlayerBar. 
-// See implementation below.
 import { useSpeech } from '@/hooks/useSpeech';
 import { RadioStation, ViewState, SearchFilters } from '@/types';
 import { searchStations, getTopStations } from '@/services/radioService';
@@ -67,7 +64,6 @@ const SonicWaveApp: React.FC = () => {
 
   // State
   const [stations, setStations] = useState<RadioStation[]>([]);
-  const [featuredStations, setFeaturedStations] = useState<RadioStation[]>([]);
   const [isFetching, setIsFetching] = useState(false);
   const [view, setView] = useState<ViewState>(ViewState.HOME);
 
@@ -145,7 +141,6 @@ const SonicWaveApp: React.FC = () => {
   const loadInitialData = async () => {
     setIsFetching(true);
     setSearchTitle('Lo más escuchado');
-    setFeaturedStations([]);
 
     try {
       const topData = await getTopStations();
@@ -410,7 +405,6 @@ const SonicWaveApp: React.FC = () => {
         {view === ViewState.HOME && (
           <HomeView
             stations={stations}
-            featuredStations={featuredStations}
             isFetching={isFetching}
             searchTitle={searchTitle}
             aiReasoning={aiReasoning}
@@ -582,7 +576,6 @@ const SonicWaveApp: React.FC = () => {
         volume={volume}
         onVolumeChange={setVolume}
         isLoading={isLoading}
-        audioRef={audioRef}
         analyser={analyserRef.current}
         isFavorite={currentStation ? favorites.some(f => f.stationuuid === currentStation.stationuuid) : false}
         onToggleFavorite={handleToggleFavorite}

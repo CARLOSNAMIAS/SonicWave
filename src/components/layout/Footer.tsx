@@ -33,15 +33,23 @@ const Footer: React.FC<FooterProps> = ({ onAboutClick, onMagazineClick }) => {
                         <ul className="space-y-2.5 text-[15px]">
                             {MAGAZINE_ENABLED && (
                                 <li>
-                                    <button onClick={onMagazineClick} className="hover:text-signal transition-colors">
+                                    <a
+                                        href={viewPath(ViewState.MAGAZINE)}
+                                        onClick={(e) => handleViewLinkClick(e, ViewState.MAGAZINE, onMagazineClick)}
+                                        className="hover:text-signal transition-colors"
+                                    >
                                         Revista
-                                    </button>
+                                    </a>
                                 </li>
                             )}
                             <li>
-                                <button onClick={onAboutClick} className="hover:text-signal transition-colors">
+                                <a
+                                    href={viewPath(ViewState.ABOUT)}
+                                    onClick={(e) => handleViewLinkClick(e, ViewState.ABOUT, onAboutClick)}
+                                    className="hover:text-signal transition-colors"
+                                >
                                     Sobre nosotros
-                                </button>
+                                </a>
                             </li>
                             <li>
                                 <a href="http://www.radio-browser.info/" target="_blank" rel="noopener noreferrer" className="hover:text-signal transition-colors">

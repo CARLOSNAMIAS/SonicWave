@@ -4,7 +4,7 @@ export interface ContentInfo {
     funFact?: string;
 }
 
-export const COUNTRY_CONTENT: Record<string, ContentInfo> = {
+const COUNTRY_CONTENT: Record<string, ContentInfo> = {
     'Venezuela': {
         title: 'Ritmos de Venezuela',
         description: 'Explora la vibrante escena radial venezolana, desde las noticias de Caracas hasta el folclore de los llanos. Disfruta de una mezcla única de salsa, merengue y música tradicional llanera que define la identidad sonora del país.',
@@ -39,7 +39,7 @@ export const COUNTRY_CONTENT: Record<string, ContentInfo> = {
     }
 };
 
-export const GENRE_CONTENT: Record<string, ContentInfo> = {
+const GENRE_CONTENT: Record<string, ContentInfo> = {
     'lofi': {
         title: 'Zona de Enfoque Lo-Fi',
         description: 'Beats relajantes de baja fidelidad perfectos para estudiar, trabajar o simplemente desconectar. Una curaduría de ondas suaves para calmar tu mente.',

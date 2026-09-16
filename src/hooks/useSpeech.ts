@@ -6,25 +6,10 @@ import { useState, useCallback, useEffect } from 'react';
  */
 export const useSpeech = () => {
     const [isSpeaking, setIsSpeaking] = useState(false);
-    const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
     const [isMuted, setIsMuted] = useState(() => {
         const stored = localStorage.getItem('sonicwave_ai_muted');
         return stored === 'true';
     });
-
-    // Load voices and listen for changes
-    useEffect(() => {
-        const loadVoices = () => {
-            if (window.speechSynthesis) {
-                setVoices(window.speechSynthesis.getVoices());
-            }
-        };
-
-        loadVoices();
-        if (window.speechSynthesis) {
-            window.speechSynthesis.onvoiceschanged = loadVoices;
-        }
-    }, []);
 
     // Persist mute state
     useEffect(() => {

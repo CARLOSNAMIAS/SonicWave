@@ -12,7 +12,6 @@ import AudioVisualizer from './AudioVisualizer';
  * @property {number} volume - The current volume level (0 to 1).
  * @property {(val: number) => void} onVolumeChange - Function to call when the volume is changed.
  * @property {boolean} isLoading - Whether the audio stream is currently loading.
- * @property {React.RefObject<HTMLAudioElement | null>} audioRef - Ref to the HTMLAudioElement for direct control.
  */
 interface PlayerBarProps {
   currentStation: RadioStation | null;
@@ -22,7 +21,6 @@ interface PlayerBarProps {
   volume: number;
   onVolumeChange: (val: number) => void;
   isLoading: boolean;
-  audioRef: React.RefObject<HTMLAudioElement | null>;
   analyser: AnalyserNode | null;
   isFavorite: boolean;
   onToggleFavorite: (station: RadioStation) => void;
