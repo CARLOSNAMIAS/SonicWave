@@ -20,8 +20,9 @@ interface MagazineContent {
 
 const MagazineView: React.FC = () => {
     useSEO({
-        title: 'Sonic Insights | Tu Revista Musical con IA',
-        description: 'Descubre el horóscopo musical, noticias de la industria y datos curiosos generados por nuestra IA.'
+        title: 'Revista | SonicWave',
+        description: 'Horóscopo sonoro, novedades de la industria y datos de la historia de la radio, en la revista de SonicWave.',
+        path: '/?view=MAGAZINE'
     });
 
     const [content, setContent] = useState<MagazineContent | null>(null);

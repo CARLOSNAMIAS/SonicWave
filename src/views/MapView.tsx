@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { SearchFilters } from '@/types';
+import { useSEO } from '@/hooks/useSEO';
 
 interface MapViewProps {
     onPerformSearch: (filters: SearchFilters) => void;
@@ -20,6 +21,12 @@ const regions = [
  * un renglón que lanza la búsqueda.
  */
 const MapView: React.FC<MapViewProps> = ({ onPerformSearch }) => {
+    useSEO({
+        title: 'Radio por países | SonicWave',
+        description: 'Explora emisoras de radio en directo por regiones y países: América, Europa, Asia, África y Oceanía. Elige un país y escucha lo que suena allí ahora mismo.',
+        path: '/?view=EXPLORE'
+    });
+
     return (
         <div className="pt-10">
             <header className="pb-10">
