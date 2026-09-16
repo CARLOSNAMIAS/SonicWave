@@ -34,6 +34,7 @@ import FavoritesView from '@/views/FavoritesView';
 import AboutView from '@/views/AboutView';
 import MagazineView from '@/views/MagazineView';
 import MapView from '@/views/MapView';
+import { MAGAZINE_ENABLED } from '@/config';
 import CookieBanner from '@/components/CookieBanner';
 import DynamicBackground from '@/components/DynamicBackground';
 
@@ -124,7 +125,11 @@ const SonicWaveApp: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     const viewParam = params.get('view');
     if (viewParam && viewParam in ViewState) {
-      setView(ViewState[viewParam as keyof typeof ViewState]);
+      const requested = ViewState[viewParam as keyof typeof ViewState];
+      // Un enlace antiguo a una sección retirada abre la portada, no una
+      // pantalla en blanco.
+      if (requested === ViewState.MAGAZINE && !MAGAZINE_ENABLED) return;
+      setView(requested);
     }
   }, []);
 
@@ -444,7 +449,7 @@ const SonicWaveApp: React.FC = () => {
           <MapView onPerformSearch={performSearch} />
         )}
 
-        {view === ViewState.MAGAZINE && <MagazineView />}
+        {MAGAZINE_ENABLED && view === ViewState.MAGAZINE && <MagazineView />}
 
         {/* Cierre editorial de la portada: explica qué es esto a quien llega de una búsqueda. */}
         {view === ViewState.HOME && <section className="mt-24 py-16">
@@ -520,7 +525,6 @@ const SonicWaveApp: React.FC = () => {
               { v: ViewState.HOME, label: 'Descubrir' },
               { v: ViewState.FAVORITES, label: 'Favoritos' },
               { v: ViewState.EXPLORE, label: 'Explorar' },
-              { v: ViewState.MAGAZINE, label: 'Revista' },
               { v: ViewState.ABOUT, label: 'Sobre nosotros' },
             ].map(item => (
               <button
