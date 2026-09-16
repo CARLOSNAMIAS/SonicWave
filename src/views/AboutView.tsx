@@ -56,9 +56,10 @@ const AboutView: React.FC = () => {
                     <h2 className="t-display text-[clamp(1.5rem,4.5vw,2.25rem)] mb-5">Cómo funciona</h2>
                     <p className="text-[15px] md:text-base leading-relaxed text-meta-c mb-4">
                         El catálogo viene de <strong className="font-semibold text-ink dark:text-paper">Radio Browser</strong>,
-                        la base de datos comunitaria de emisoras activas. Las búsquedas en
-                        lenguaje natural las interpreta <strong className="font-semibold text-ink dark:text-paper">Google Gemini</strong>,
-                        que traduce «algo tranquilo para trabajar» en géneros y países concretos.
+                        la base de datos comunitaria de emisoras activas. El DJ traduce lo
+                        que le escribes —«algo tranquilo para trabajar», «salsa venezolana»—
+                        en géneros y países concretos. Funciona dentro de tu navegador, sin
+                        enviar tus peticiones a ningún servicio externo.
                     </p>
                     <p className="text-[15px] md:text-base leading-relaxed text-meta-c">
                         Tus favoritos y tu preferencia de tema se guardan solo en tu navegador.

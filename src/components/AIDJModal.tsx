@@ -2,22 +2,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, Minus, Volume2, VolumeX } from 'lucide-react';
 
-const ALL_SUGGESTIONS = [
-  'Música lofi para estudiar',
-  'Noticias mundiales de la BBC',
-  'Éxitos alternativos de Japón',
-  'Salsa pesada colombiana',
-  'Reggaeton de Puerto Rico',
-  'Synthwave retro de los 80s',
-  'Jazz Manouche francés',
-  'Rock alternativo de Reino Unido',
-  'Música clásica para concentrarse',
-  'Pop actual de Corea (K-Pop)',
-  'Podcast de noticias tecnológicas',
-  'Ambiente de naturaleza y lluvia',
-  'Heavy Metal escandinavo',
-  'Bossa Nova de Brasil',
-  'Indie pop de México',
+export const ALL_SUGGESTIONS = [
+  'Algo tranquilo para trabajar',
+  'Salsa venezolana',
+  'Música para bailar',
+  'Rock argentino',
+  'Jazz',
+  'Noticias',
+  'Reggaeton',
+  'Radio de Japón',
+  'Clásica',
+  'Música de los 80',
+  'Algo para dormir',
+  'Electrónica',
+  'Rancheras',
+  'Podcast de cultura',
+  'Metal',
+  'Bachata',
+  'Radio de España',
+  'Indie',
 ];
 
 interface Message {
@@ -30,7 +33,7 @@ interface Message {
 interface AIDJModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (prompt: string, history: any[]) => void;
+  onSubmit: (peticion: string) => void;
   isProcessing: boolean;
   aiReasoning: string | null;
   isMuted: boolean;
@@ -84,7 +87,7 @@ const AIDJModal: React.FC<AIDJModalProps> = ({ isOpen, onClose, onSubmit, isProc
       if (messages.length === 0) {
         setMessages([{
           id: 'welcome',
-          text: 'Dime qué quieres escuchar: un género, un país, un momento del día. Busco las emisoras y te explico por qué.',
+          text: 'Dime qué quieres escuchar: un género, un país o un momento del día. Yo busco las emisoras.',
           sender: 'ai',
           timestamp: new Date(),
         }]);
@@ -106,14 +109,9 @@ const AIDJModal: React.FC<AIDJModalProps> = ({ isOpen, onClose, onSubmit, isProc
       };
       setMessages(prev => [...prev, userMessage]);
 
-      // Map existing messages to ChatMessage format for AI context
-      const history = messages.map(msg => ({
-        role: msg.sender === 'user' ? 'user' : 'model',
-        content: msg.text
-      }));
-
-      // Submit to AI
-      onSubmit(input, history);
+      // El DJ guarda por su cuenta lo último que puso, así que no hace falta
+      // mandarle el historial de la conversación.
+      onSubmit(input);
       setInput('');
     }
   };

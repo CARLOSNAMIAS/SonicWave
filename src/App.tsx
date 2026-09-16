@@ -4,7 +4,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useSpeech } from '@/hooks/useSpeech';
 import { RadioStation, ViewState, SearchFilters } from '@/types';
 import { searchStations, getTopStations } from '@/services/radioService';
-import { getRadioRecommendations } from '@/services/geminiService';
+import { pedirAlDJ, ContextoDJ } from '@/services/dj';
 import { customVenezuelaStations } from '@/data/venezuelaStations';
 import PlayerBar from '@/components/PlayerBar';
 import AIDJModal from '@/components/AIDJModal';
@@ -67,7 +67,7 @@ const SonicWaveApp: React.FC = () => {
   const [isFetching, setIsFetching] = useState(false);
   const [view, setView] = useState<ViewState>(ViewState.HOME);
 
-  // AI DJ
+  // El DJ
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [aiProcessing, setAiProcessing] = useState(false);
   const [aiReasoning, setAiReasoning] = useState<string | null>(null);
@@ -77,6 +77,9 @@ const SonicWaveApp: React.FC = () => {
   const [recommendedStation, setRecommendedStation] = useState<RadioStation | null>(null);
   const [searchTitle, setSearchTitle] = useState('Lo más escuchado');
   const [vibe, setVibe] = useState<{ primaryColor: string; accentColor: string; mood: string } | null>(null);
+
+  // El DJ recuerda lo último que puso, para entender «ponme otra» o «algo más movido».
+  const djContexto = useRef<ContextoDJ>({ intencion: null, pais: null, energia: null, ultimaRespuesta: null });
 
   // Refs
   const countryScrollRef = useRef<HTMLDivElement | null>(null);
@@ -246,28 +249,29 @@ const SonicWaveApp: React.FC = () => {
     }
   };
 
-  const handleAIRequest = async (prompt: string, history: any[] = []) => {
+  const handleDJRequest = async (peticion: string) => {
+    const respuesta = pedirAlDJ(peticion, djContexto.current);
+    djContexto.current = respuesta.contexto;
+
+    setAiReasoning(respuesta.reasoning);
+    speak(respuesta.reasoning);
+
+    if (respuesta.vibe) {
+      setVibe(respuesta.vibe);
+    }
+
+    // Un saludo o una pregunta no llevan a ninguna búsqueda: el DJ contesta y ya.
+    if (!respuesta.searchQuery) return;
+
     setAiProcessing(true);
     setPlaybackError(null);
     try {
-      const rec = await getRadioRecommendations(prompt, history);
-      setAiReasoning(rec.reasoning);
-      speak(rec.reasoning);
-
-      if (rec.vibe) {
-        setVibe(rec.vibe);
-      }
-
-      setSearchTitle('Recomendaciones de tu DJ IA');
-      await performSearch(rec.searchQuery, true);
-      setSearchTitle('Recomendaciones de tu DJ IA');
+      await performSearch(respuesta.searchQuery, true);
+      setSearchTitle('La selección del DJ');
 
       setTimeout(() => {
         resultsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
-    } catch (error) {
-      console.error("AI Request Error:", error);
-      setPlaybackError("El DJ de IA tiene problemas de conexión, pero puedes seguir buscando por género o país manualmente.");
     } finally {
       setAiProcessing(false);
     }
@@ -441,10 +445,9 @@ const SonicWaveApp: React.FC = () => {
               </h2>
               <p className="mt-8 text-[16px] md:text-[18px] leading-relaxed text-meta-c max-w-[58ch]">
                 SonicWave reúne más de 30 000 emisoras públicas y te ayuda a moverte
-                entre ellas. Escribe lo que te apetece escuchar y el DJ, con{' '}
-                <strong className="font-semibold text-ink dark:text-paper">Google Gemini</strong>,
-                traduce esa frase en géneros, países y emisoras concretas, y te cuenta
-                por qué eligió cada una.
+                entre ellas. Escribe lo que te apetece escuchar —un género, un país o
+                simplemente «algo tranquilo para trabajar»— y el DJ lo convierte en una
+                búsqueda concreta, al instante y sin salir de la página.
               </p>
             </div>
 
@@ -473,7 +476,7 @@ const SonicWaveApp: React.FC = () => {
       <AIDJModal
         isOpen={isAIModalOpen}
         onClose={() => setIsAIModalOpen(false)}
-        onSubmit={handleAIRequest}
+        onSubmit={handleDJRequest}
         isProcessing={aiProcessing}
         aiReasoning={aiReasoning}
         isMuted={isMuted}

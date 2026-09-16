@@ -9,7 +9,7 @@ interface AudioVisualizerProps {
     height?: number;
 }
 
-/** Lee el color de señal vigente (el DJ IA puede reasignarlo). */
+/** Lee el color de señal vigente (el DJ puede reasignarlo). */
 const readSignal = (): string => {
     if (typeof window === 'undefined') return 'rgb(255, 59, 0)';
     const raw = getComputedStyle(document.documentElement).getPropertyValue('--signal').trim();
