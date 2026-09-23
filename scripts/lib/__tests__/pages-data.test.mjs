@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PAGES, pagePath, loadContent } from '../pages-data.mjs';
+import { PAGES, pagePath, stationQuery, loadContent } from '../pages-data.mjs';
 
 describe('pages-data', () => {
     it('describe veintiuna páginas, seis de país y quince de género', () => {
@@ -27,6 +27,12 @@ describe('pages-data', () => {
         const bts = PAGES.find(p => p.slug === 'bts');
         expect(bts.apiParam).toBe('name');
         expect(bts.apiValue).toBe('bts');
+    });
+
+    it('pide Estados Unidos por código, como hace la aplicación', () => {
+        const usa = PAGES.find(p => p.slug === 'usa');
+        expect(stationQuery(usa)).toEqual({ countrycode: 'US' });
+        expect(stationQuery(PAGES.find(p => p.slug === 'jazz'))).toEqual({ tag: 'jazz' });
     });
 
     it('carga el texto real de cada ficha desde contentData', async () => {

@@ -18,7 +18,7 @@ export const PAGES = [
     { slug: 'mexico', section: 'radio', name: 'México', contentKey: 'Mexico', contentType: 'country', apiParam: 'country', apiValue: 'Mexico' },
     { slug: 'argentina', section: 'radio', name: 'Argentina', contentKey: 'Argentina', contentType: 'country', apiParam: 'country', apiValue: 'Argentina' },
     { slug: 'espana', section: 'radio', name: 'España', contentKey: 'Spain', contentType: 'country', apiParam: 'country', apiValue: 'Spain' },
-    { slug: 'usa', section: 'radio', name: 'Estados Unidos', contentKey: 'USA', contentType: 'country', apiParam: 'country', apiValue: 'USA' },
+    { slug: 'usa', section: 'radio', name: 'Estados Unidos', contentKey: 'USA', contentType: 'country', apiParam: 'country', apiValue: 'USA', query: { countrycode: 'US' } },
     { slug: 'salsa', section: 'genero', name: 'Salsa', contentKey: 'salsa', contentType: 'tag', apiParam: 'tag', apiValue: 'salsa' },
     { slug: 'reggaeton', section: 'genero', name: 'Reguetón', contentKey: 'reggaeton', contentType: 'tag', apiParam: 'tag', apiValue: 'reggaeton' },
     { slug: 'cumbia', section: 'genero', name: 'Cumbia', contentKey: 'cumbia', contentType: 'tag', apiParam: 'tag', apiValue: 'cumbia' },
@@ -35,6 +35,13 @@ export const PAGES = [
     { slug: 'podcast', section: 'genero', name: 'Pódcast', contentKey: 'podcast', contentType: 'tag', apiParam: 'tag', apiValue: 'podcast' },
     { slug: 'bts', section: 'genero', name: 'BTS', contentKey: 'bts', contentType: 'tag', apiParam: 'name', apiValue: 'bts' },
 ];
+
+/**
+ * Filtro con el que se piden las emisoras a Radio Browser. Normalmente coincide
+ * con el del enlace a la aplicación; `query` lo sustituye cuando la API conoce
+ * el país por otro nombre (igual que hace radioService en la aplicación).
+ */
+export const stationQuery = (page) => page.query || { [page.apiParam]: page.apiValue };
 
 /** Dirección pública de una página, sin el dominio. */
 export const pagePath = (page) => `/${page.section}/${page.slug}`;
