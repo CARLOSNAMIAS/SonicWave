@@ -121,25 +121,41 @@ const SonicWaveApp: React.FC = () => {
   // --- Effects ---
 
   useEffect(() => {
-    // La interfaz se pinta de inmediato y el listado muestra su propio estado de
-    // carga: no hay pantalla previa que tape la página. loadInitialData gestiona
-    // sus errores, así que un fallo de la API deja la aplicación usable con el
-    // aviso correspondiente.
-    loadInitialData();
-  }, []);
+    const params = new URLSearchParams(window.location.search);
 
-  useEffect(() => {
+    // Las páginas estáticas de país y género enlazan aquí con el filtro puesto,
+    // para que quien llega desde un buscador empiece a escuchar en un clic.
+    const country = params.get('country');
+    const tag = params.get('tag');
+    const name = params.get('name');
+
+    if (country || tag || name) {
+      // Esta búsqueda sustituye a la carga inicial: si se lanzaran las dos, la
+      // del catálogo general podría pisar el filtro pedido.
+      performSearch({
+        ...(country ? { country } : {}),
+        ...(tag ? { tag } : {}),
+        ...(name ? { name } : {}),
+      });
+      return;
+    }
+
     // Cada vista tiene su propia URL: al entrar directamente por ella (un enlace
     // compartido o un resultado de búsqueda) se abre esa sección, no la portada.
-    const params = new URLSearchParams(window.location.search);
     const viewParam = params.get('view');
     if (viewParam && viewParam in ViewState) {
       const requested = ViewState[viewParam as keyof typeof ViewState];
       // Un enlace antiguo a una sección retirada abre la portada, no una
       // pantalla en blanco.
-      if (requested === ViewState.MAGAZINE && !MAGAZINE_ENABLED) return;
-      setView(requested);
+      if (requested !== ViewState.MAGAZINE || MAGAZINE_ENABLED) {
+        setView(requested);
+      }
     }
+
+    // La interfaz se pinta de inmediato y el listado muestra su propio estado de
+    // carga. loadInitialData gestiona sus errores, así que un fallo de la API
+    // deja la aplicación usable con el aviso correspondiente.
+    loadInitialData();
   }, []);
 
   useEffect(() => {
