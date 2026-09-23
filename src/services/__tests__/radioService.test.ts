@@ -25,6 +25,20 @@ describe('radioService', () => {
         expect(results[1].favicon).toBeNull(); // El servicio convierte strings vacíos a null
     });
 
+    it('busca Estados Unidos y Corea del Sur por código, porque la API no reconoce esos nombres', async () => {
+        (fetch as any).mockResolvedValue({ ok: true, json: () => Promise.resolve([]) });
+
+        await searchStations({ country: 'USA' });
+        expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('countrycode=US'));
+        expect(fetch).toHaveBeenLastCalledWith(expect.not.stringContaining('country=USA'));
+
+        await searchStations({ country: 'South Korea' });
+        expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('countrycode=KR'));
+
+        await searchStations({ country: 'Colombia' });
+        expect(fetch).toHaveBeenLastCalledWith(expect.stringContaining('country=Colombia'));
+    });
+
     it('searchStations should throw an error when API returns not ok', async () => {
         (fetch as any).mockResolvedValue({
             ok: false,
