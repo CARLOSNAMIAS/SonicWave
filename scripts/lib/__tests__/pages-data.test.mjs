@@ -54,7 +54,7 @@ describe('pages-data', () => {
     });
 
     it('el pie de la aplicación enlaza exactamente estas páginas', () => {
-        const pie = readFileSync(new URL('../../../src/components/layout/Footer.tsx', import.meta.url), 'utf8');
+        const pie = readFileSync('src/components/layout/Footer.tsx', 'utf8');
         const enPie = [...pie.matchAll(/slug: '([a-z0-9-]+)'/g)].map(m => m[1]).sort();
         expect(enPie).toEqual(PAGES.map(p => p.slug).sort());
     });
