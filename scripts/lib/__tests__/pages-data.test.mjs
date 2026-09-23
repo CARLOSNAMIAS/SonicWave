@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { PAGES, pagePath, stationQuery, loadContent } from '../pages-data.mjs';
 
 describe('pages-data', () => {
@@ -50,5 +51,11 @@ describe('pages-data', () => {
         for (const [slug, ficha] of fichas) {
             expect(ficha.description, slug).not.toMatch(/^Descubre las emisoras especializadas/);
         }
+    });
+
+    it('el pie de la aplicación enlaza exactamente estas páginas', () => {
+        const pie = readFileSync(new URL('../../../src/components/layout/Footer.tsx', import.meta.url), 'utf8');
+        const enPie = [...pie.matchAll(/slug: '([a-z0-9-]+)'/g)].map(m => m[1]).sort();
+        expect(enPie).toEqual(PAGES.map(p => p.slug).sort());
     });
 });
