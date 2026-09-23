@@ -1,44 +1,46 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="es-419" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="canonical" href="https://sonicwave-radio.vercel.app/" />
     <meta name="google-adsense-account" content="ca-pub-6983431049380018" />
-    <title>Radio en vivo gratis: 30.000 emisoras del mundo | SonicWave</title>
+    <title>Radio en vivo gratis: emisoras latinas y del mundo | SonicWave</title>
 
-    <!-- Social Media Cards -->
     <meta
       name="description"
-      content="Escucha radio en vivo gratis: más de 30.000 emisoras de 190 países, sin registro. Busca por país o género, o pídele al DJ que elija por ti."
+      content="Escucha radio en vivo gratis: emisoras de México, Colombia, Venezuela, Argentina y más de 190 países. Salsa, reguetón, noticias y fútbol, sin registro."
     />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
 
-    <!-- Open Graph / Facebook / WhatsApp -->
+    <!-- Tarjetas para redes sociales y mensajería -->
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_LA" />
+    <meta property="og:site_name" content="SonicWave" />
     <meta property="og:url" content="https://sonicwave-radio.vercel.app/" />
-    <meta property="og:title" content="Radio en vivo gratis: 30.000 emisoras del mundo" />
+    <meta property="og:title" content="Radio en vivo gratis: emisoras latinas y del mundo" />
     <meta
       property="og:description"
-      content="Más de 30.000 emisoras públicas de 190 países, gratis y sin registro. Elige por país o género, o deja que el DJ busque por ti."
+      content="Emisoras de México, Colombia, Venezuela, Argentina y más de 190 países, gratis y sin registro. Elige por país o género, o deja que el DJ busque por ti."
     />
     <meta
       property="og:image"
       content="https://sonicwave-radio.vercel.app/compartir.png"
     />
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
+    <!-- X (antes Twitter) -->
+    <meta name="twitter:card" content="summary_large_image" />
     <meta
-      property="twitter:url"
+      name="twitter:url"
       content="https://sonicwave-radio.vercel.app/"
     />
-    <meta property="twitter:title" content="Radio en vivo gratis: 30.000 emisoras del mundo" />
+    <meta name="twitter:title" content="Radio en vivo gratis: emisoras latinas y del mundo" />
     <meta
-      property="twitter:description"
-      content="Más de 30.000 emisoras públicas de 190 países, gratis y sin registro. Elige por país o género, o deja que el DJ busque por ti."
+      name="twitter:description"
+      content="Emisoras de México, Colombia, Venezuela, Argentina y más de 190 países, gratis y sin registro. Elige por país o género, o deja que el DJ busque por ti."
     />
     <meta
-      property="twitter:image"
+      name="twitter:image"
       content="https://sonicwave-radio.vercel.app/compartir.png"
     />
     <meta name="theme-color" content="#000000" />
@@ -64,6 +66,19 @@
       html.dark {
         background-color: #000;
       }
+      .seo-fallback {
+        max-width: 60ch;
+        margin: 0 auto;
+        padding: 48px 16px;
+        font-family: Archivo, system-ui, sans-serif;
+        color: #e9e6df;
+      }
+      html:not(.dark) .seo-fallback {
+        color: #000;
+      }
+      .seo-fallback a {
+        color: inherit;
+      }
 
     </style>
     <!-- Datos estructurados: qué es este sitio y quién lo publica. Solo se
@@ -77,9 +92,9 @@
             "@id": "https://sonicwave-radio.vercel.app/#website",
             "url": "https://sonicwave-radio.vercel.app/",
             "name": "SonicWave",
-            "alternateName": "SonicWave Radio",
-            "description": "Índice gratuito de radio en directo: más de 30.000 emisoras públicas de 190 países, con un buscador que entiende lo que quieres escuchar.",
-            "inLanguage": "es",
+            "alternateName": "SonicWave, radio en vivo gratis",
+            "description": "Radio en vivo gratis: más de 30.000 emisoras de Latinoamérica y de 190 países, con un buscador que entiende lo que quieres escuchar.",
+            "inLanguage": "es-419",
             "publisher": { "@id": "https://sonicwave-radio.vercel.app/#organization" }
           },
           {
@@ -97,7 +112,7 @@
             "applicationCategory": "MultimediaApplication",
             "operatingSystem": "Cualquiera con navegador web",
             "browserRequirements": "Requiere JavaScript",
-            "inLanguage": "es",
+            "inLanguage": "es-419",
             "isAccessibleForFree": true,
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
           }
@@ -125,7 +140,26 @@
   <!-- El color de fondo vive en <html> para que el espectro de fondo (canvas en
        z-index negativo) quede por encima de él y por debajo del contenido. -->
   <body class="text-ink dark:text-paper">
-    <div id="root"></div>
+    <!-- Contenido de partida: es lo que ve un buscador que no ejecuta
+         JavaScript. React lo sustituye en cuanto arranca la aplicación. -->
+    <div id="root">
+      <main class="seo-fallback">
+        <h1>Radio en vivo gratis: emisoras latinas y de todo el mundo</h1>
+        <p>
+          Escucha radio por internet de México, Colombia, Venezuela, Argentina,
+          Perú, Chile, Centroamérica, el Caribe y más de 190 países. Más de 30.000
+          emisoras en vivo, gratis y sin registro: salsa, reguetón, cumbia,
+          bachata, vallenato, noticias y fútbol.
+        </p>
+        <nav aria-label="Secciones">
+          <ul>
+            <li><a href="/">Escuchar radio en vivo</a></li>
+            <li><a href="/?view=EXPLORE">Radio en vivo por país</a></li>
+            <li><a href="/?view=ABOUT">Qué es SonicWave</a></li>
+          </ul>
+        </nav>
+      </main>
+    </div>
     <script type="module" src="/src/index.tsx"></script>
 
     <!-- Script de analíticas (Simple Analytics) -->

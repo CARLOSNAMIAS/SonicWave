@@ -7,46 +7,57 @@ import SkeletonCard from '@/components/SkeletonCard';
 import HeroCarousel from '@/components/HeroCarousel';
 import ContentHeader from '@/components/ContentHeader';
 import { getContentForFilter, ContentInfo } from '@/data/contentData';
+import { countryLabel } from '@/data/countries';
 import { ChevronLeft, ChevronRight as ChevronRightIcon } from 'lucide-react';
 
-// Constants moved to a local scope or separate file if preferred
+// Primero Latinoamérica, que es a quien se dirige el sitio; después, el resto.
+// `name` es el nombre que entiende la API; el que se muestra sale de `countryLabel`.
 const POPULAR_COUNTRIES = [
-    { name: 'Venezuela', code: 've', label: 'Venezuela' },
-    { name: 'Spain', code: 'es', label: 'España' },
-    { name: 'USA', code: 'us', label: 'USA' },
-    { name: 'Mexico', code: 'mx', label: 'México' },
-    { name: 'Argentina', code: 'ar', label: 'Argentina' },
-    { name: 'Bolivia', code: 'bo', label: 'Bolivia' },
-    { name: 'Chile', code: 'cl', label: 'Chile' },
-    { name: 'Colombia', code: 'co', label: 'Colombia' },
-    { name: 'Ecuador', code: 'ec', label: 'Ecuador' },
-    { name: 'Peru', code: 'pe', label: 'Perú' },
-    { name: 'Uruguay', code: 'uy', label: 'Uruguay' },
-    { name: 'Brazil', code: 'br', label: 'Brasil' },
-    { name: 'France', code: 'fr', label: 'Francia' },
-    { name: 'Italy', code: 'it', label: 'Italia' },
-    { name: 'Germany', code: 'de', label: 'Alemania' },
-    { name: 'Japan', code: 'jp', label: 'Japón' },
-    { name: 'South Korea', code: 'kr', label: 'Corea' },
-    { name: 'China', code: 'cn', label: 'China' },
-    { name: 'India', code: 'in', label: 'India' },
-    { name: 'Indonesia', code: 'id', label: 'Indonesia' },
-    { name: 'Philippines', code: 'ph', label: 'Filipinas' },
-    { name: 'Thailand', code: 'th', label: 'Tailandia' },
-    { name: 'Vietnam', code: 'vn', label: 'Vietnam' },
+    { name: 'Mexico', code: 'mx' },
+    { name: 'Colombia', code: 'co' },
+    { name: 'Venezuela', code: 've' },
+    { name: 'Argentina', code: 'ar' },
+    { name: 'Peru', code: 'pe' },
+    { name: 'Chile', code: 'cl' },
+    { name: 'Ecuador', code: 'ec' },
+    { name: 'Guatemala', code: 'gt' },
+    { name: 'Dominican Republic', code: 'do' },
+    { name: 'Cuba', code: 'cu' },
+    { name: 'Bolivia', code: 'bo' },
+    { name: 'Honduras', code: 'hn' },
+    { name: 'Paraguay', code: 'py' },
+    { name: 'El Salvador', code: 'sv' },
+    { name: 'Nicaragua', code: 'ni' },
+    { name: 'Costa Rica', code: 'cr' },
+    { name: 'Panama', code: 'pa' },
+    { name: 'Uruguay', code: 'uy' },
+    { name: 'Puerto Rico', code: 'pr' },
+    { name: 'USA', code: 'us' },
+    { name: 'Spain', code: 'es' },
+    { name: 'Brazil', code: 'br' },
+    { name: 'France', code: 'fr' },
+    { name: 'Italy', code: 'it' },
+    { name: 'Germany', code: 'de' },
+    { name: 'Japan', code: 'jp' },
+    { name: 'South Korea', code: 'kr' },
 ];
 
 const QUICK_MOODS = [
-    { id: 'lofi', label: 'Para concentrarse', filters: { tag: 'lofi' } },
-    { id: 'dance', label: 'Con energía', filters: { tag: 'dance' } },
-    { id: 'chill', label: 'Tranquila', filters: { tag: 'chillout' } },
-    { id: 'jazz', label: 'Jazz', filters: { tag: 'jazz' } },
+    { id: 'latin', label: 'Música latina', filters: { tag: 'latin' } },
+    { id: 'salsa', label: 'Salsa', filters: { tag: 'salsa' } },
+    { id: 'reggaeton', label: 'Reguetón', filters: { tag: 'reggaeton' } },
+    { id: 'cumbia', label: 'Cumbia', filters: { tag: 'cumbia' } },
+    { id: 'bachata', label: 'Bachata', filters: { tag: 'bachata' } },
+    { id: 'vallenato', label: 'Vallenato', filters: { tag: 'vallenato' } },
     { id: 'rock', label: 'Rock', filters: { tag: 'rock' } },
-    { id: 'hip-hop', label: 'Hip-Hop', filters: { tag: 'hip-hop' } },
+    { id: 'hip-hop', label: 'Rap', filters: { tag: 'hip-hop' } },
     { id: 'electronic', label: 'Electrónica', filters: { tag: 'electronic' } },
-    { id: 'latin', label: 'Latina', filters: { tag: 'latin' } },
-    { id: 'podcast', label: 'Podcasts en español', filters: { tag: 'podcast', name: 'spanish' } },
-    { id: 'bts', label: 'BTS Army', filters: { name: 'bts' } },
+    { id: 'jazz', label: 'Jazz', filters: { tag: 'jazz' } },
+    { id: 'lofi', label: 'Para concentrarse', filters: { tag: 'lofi' } },
+    { id: 'dance', label: 'Para bailar', filters: { tag: 'dance' } },
+    { id: 'chill', label: 'Tranquila', filters: { tag: 'chillout' } },
+    { id: 'podcast', label: 'Pódcast en español', filters: { tag: 'podcast', name: 'spanish' } },
+    { id: 'bts', label: 'Radio de BTS', filters: { name: 'bts' } },
 ];
 
 interface HomeViewProps {
@@ -92,8 +103,8 @@ const HomeView: React.FC<HomeViewProps> = ({
     };
 
     useSEO({
-        title: activeContent ? `${activeContent.title} | Radio en vivo | SonicWave` : 'Radio en vivo gratis: 30.000 emisoras del mundo | SonicWave',
-        description: activeContent?.description || 'Escucha gratis más de 30.000 emisoras de radio en directo de 190 países. Busca por país o género, o pídele al DJ que elija por ti.',
+        title: activeContent ? `${activeContent.title} | SonicWave` : 'Radio en vivo gratis: emisoras latinas y del mundo | SonicWave',
+        description: activeContent?.description || 'Escucha radio en vivo gratis: emisoras de México, Colombia, Venezuela, Argentina y más de 190 países. Salsa, reguetón, noticias y fútbol, sin registro.',
         path: '/'
     });
 
@@ -103,7 +114,7 @@ const HomeView: React.FC<HomeViewProps> = ({
 
             {/* Géneros: casillas separadas por espacio, iguales en móvil y escritorio */}
             <section className="pt-14">
-                <h2 className="t-data text-[10px] text-meta-c mb-5">Qué te apetece escuchar</h2>
+                <h2 className="t-data text-[10px] text-meta-c mb-5">¿Qué quieres escuchar?</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
                     {QUICK_MOODS.map(mood => (
                         <button
@@ -123,7 +134,7 @@ const HomeView: React.FC<HomeViewProps> = ({
             {/* Países */}
             <section className="relative pt-14">
                 <div className="flex items-center justify-between mb-5">
-                    <h2 className="t-data text-[10px] text-meta-c">O empieza por un país</h2>
+                    <h2 className="t-data text-[10px] text-meta-c">O elige un país</h2>
                     <div className="hidden md:flex items-center gap-2">
                         <button
                             type="button"
@@ -158,9 +169,9 @@ const HomeView: React.FC<HomeViewProps> = ({
                                 src={`https://flagcdn.com/w160/${c.code}.png`}
                                 className="w-[76px] h-[50px] object-cover mb-3"
                                 loading="lazy"
-                                alt=""
+                                alt={`Bandera de ${countryLabel(c.name)}`}
                             />
-                            <span className="text-[14px] font-medium block truncate">{c.label}</span>
+                            <span className="text-[14px] font-medium block truncate">{countryLabel(c.name)}</span>
                             <span className={`t-data text-[10px] ${activeFilterId === c.code ? 'opacity-60' : 'text-meta-c'}`}>
                                 {c.code.toUpperCase()}
                             </span>

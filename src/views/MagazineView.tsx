@@ -113,7 +113,7 @@ const MagazineView: React.FC = () => {
                     <span>{today}</span>
                 </div>
                 <h1 className="t-display text-[clamp(2.75rem,14vw,9rem)]">
-                    Sonic Insights
+                    Notas de radio
                 </h1>
             </header>
 

@@ -22,7 +22,7 @@ const AboutView: React.FC = () => {
                     Qué es<br />SonicWave
                 </h1>
                 <p className="mt-8 text-[18px] md:text-[22px] leading-[1.4] max-w-[52ch]">
-                    Un índice de la radio pública mundial. Escribes lo que te apetece
+                    Un índice de la radio pública mundial. Escribes lo que quieres
                     escuchar, el DJ busca entre miles de emisoras y te dice por qué eligió
                     cada una.
                 </p>

@@ -35,7 +35,7 @@ export const CONVERSACION: Intencion[] = [
         claves: ['hola', 'holaa', 'buenas', 'hey', 'ey', 'que tal', 'como estas', 'como va',
             'buenos dias', 'buenas tardes', 'buenas noches', 'saludos', 'epale', 'que hay'],
         respuestas: [
-            '¡Hola! Dime qué te apetece escuchar: un género, un país o un momento del día.',
+            '¡Hola! Dime qué quieres escuchar: un género, un país o un momento del día.',
             'Aquí estoy. ¿Qué ponemos? Puedes pedirme salsa, algo tranquilo o radio de Japón.',
             '¡Buenas! Tú dime el ambiente y yo busco la emisora.',
             'Hola. ¿Empezamos con algo movido o con algo suave?',
@@ -447,7 +447,7 @@ export const INTENCIONES: Intencion[] = [
         tags: ['indie', 'alternative'],
         respuestas: [
             'De los que aún no suenan en todas partes.',
-            'Indie del bueno, antes de que se ponga de moda.',
+            'Música independiente, antes de que se ponga de moda.',
         ],
         color: '#5A7D5A',
         energia: 3,
@@ -461,7 +461,7 @@ export const INTENCIONES: Intencion[] = [
             'bbc', 'cnn', 'informacion', 'periodismo'],
         tags: ['news', 'talk'],
         respuestas: [
-            'Lo que está pasando ahí fuera, en directo.',
+            'Lo que está pasando allá afuera, en vivo.',
             'Noticias. Avisado quedas.',
             'Del mundo real, para variar.',
         ],
@@ -475,7 +475,7 @@ export const INTENCIONES: Intencion[] = [
             'conversacion', 'cultura', 'divulgacion'],
         tags: ['podcast', 'talk', 'culture', 'education'],
         respuestas: [
-            'Gente hablando de cosas. A veces es justo lo que apetece.',
+            'Gente hablando de cosas. A veces es justo lo que uno quiere.',
             'Voces en lugar de música. Ahí tienes.',
         ],
         color: '#5D737E',
@@ -487,7 +487,7 @@ export const INTENCIONES: Intencion[] = [
         claves: ['deportes', 'deporte', 'futbol', 'beisbol', 'partido', 'liga', 'sports'],
         tags: ['sports', 'talk'],
         respuestas: [
-            'Deporte en directo. Que no te lo cuenten.',
+            'Deportes en vivo. Que no te lo cuenten.',
             'A ver cómo va el partido.',
         ],
         color: '#1B7F3B',

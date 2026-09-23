@@ -72,13 +72,13 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
         <div className="h-full flex flex-col">
           <div className="flex items-center justify-between px-4 h-14 shrink-0">
             <span className="t-data text-[11px] text-white/50">
-              {isPlaying ? 'En directo' : 'En pausa'}
+              {isPlaying ? 'En vivo' : 'En pausa'}
             </span>
             <button
               type="button"
               onClick={() => setIsExpanded(false)}
               className="w-10 h-10 flex items-center justify-center text-white/60 hover:text-white transition-colors"
-              title="Close player"
+              title="Cerrar reproductor"
               aria-label="Cerrar reproductor"
             >
               <ChevronDown size={22} />
@@ -115,7 +115,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
               <button
                 type="button"
                 onClick={() => onSkip('previous')}
-                title="Skip Back"
+                title="Emisora anterior"
                 aria-label="Emisora anterior"
                 className="w-12 h-12 flex items-center justify-center text-white/60 hover:text-white transition-colors"
               >
@@ -125,7 +125,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
               <button
                 type="button"
                 onClick={onPlayPause}
-                title={isPlaying ? 'Pause' : 'Play'}
+                title={isPlaying ? 'Pausar' : 'Reproducir'}
                 className="w-20 h-20 bg-signal text-white flex items-center justify-center active:bg-white active:text-ink transition-colors"
               >
                 {isLoading
@@ -138,7 +138,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
               <button
                 type="button"
                 onClick={() => onSkip('next')}
-                title="Skip Forward"
+                title="Emisora siguiente"
                 aria-label="Emisora siguiente"
                 className="w-12 h-12 flex items-center justify-center text-white/60 hover:text-white transition-colors"
               >
@@ -162,7 +162,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
                   type="range" min="0" max="1" step="0.01"
                   value={volume} onChange={e => onVolumeChange(parseFloat(e.target.value))}
                   className="flex-1"
-                  title="Volume control"
+                  title="Volumen"
                   aria-label="Volumen"
                 />
               </div>
@@ -207,7 +207,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
             <button
               type="button"
               onClick={() => onSkip('previous')}
-              title="Skip Back"
+              title="Emisora anterior"
               aria-label="Emisora anterior"
               className="hidden sm:flex w-10 h-10 items-center justify-center text-white/50 hover:text-white transition-colors"
             >
@@ -217,7 +217,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
             <button
               type="button"
               onClick={onPlayPause}
-              title={isPlaying ? 'Pause' : 'Play'}
+              title={isPlaying ? 'Pausar' : 'Reproducir'}
               className="w-12 h-12 flex items-center justify-center bg-paper text-ink hover:bg-signal hover:text-white transition-colors"
             >
               {isLoading
@@ -230,7 +230,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
             <button
               type="button"
               onClick={() => onSkip('next')}
-              title="Skip Forward"
+              title="Emisora siguiente"
               aria-label="Emisora siguiente"
               className="hidden sm:flex w-10 h-10 items-center justify-center text-white/50 hover:text-white transition-colors"
             >
@@ -250,7 +250,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
                 type="range" min="0" max="1" step="0.01"
                 value={volume} onChange={e => onVolumeChange(parseFloat(e.target.value))}
                 className="w-full"
-                title="Volume control"
+                title="Volumen"
                 aria-label="Volumen"
               />
             </div>
@@ -277,7 +277,7 @@ const PlayerBar: React.FC<PlayerBarProps> = ({
             </button>
             <button
               type="button"
-              title="Expand player"
+              title="Abrir reproductor"
               aria-label="Abrir reproductor"
               className="w-10 h-10 flex items-center justify-center text-white/50"
               onClick={() => setIsExpanded(true)}

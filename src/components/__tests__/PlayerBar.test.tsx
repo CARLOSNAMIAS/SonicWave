@@ -34,7 +34,7 @@ describe('PlayerBar', () => {
     it('calls onPlayPause when play button is clicked', () => {
         render(<PlayerBar {...defaultProps} />);
         // Buscamos el botón de play por el título (aria-label o title)
-        const playButton = screen.getAllByTitle('Play')[0];
+        const playButton = screen.getAllByTitle('Reproducir')[0];
         fireEvent.click(playButton);
         expect(defaultProps.onPlayPause).toHaveBeenCalled();
     });
@@ -54,11 +54,11 @@ describe('PlayerBar', () => {
 
     it('expands on mobile when expand button is clicked', () => {
         render(<PlayerBar {...defaultProps} />);
-        const expandButton = screen.getByTitle('Expand player');
+        const expandButton = screen.getByTitle('Abrir reproductor');
         fireEvent.click(expandButton);
 
         // Al expandirse, debería aparecer el botón de cerrar (ChevronDown)
-        expect(screen.getByTitle('Close player')).toBeInTheDocument();
+        expect(screen.getByTitle('Cerrar reproductor')).toBeInTheDocument();
     });
 
     it('does not render if no station is selected', () => {

@@ -35,6 +35,29 @@ import { MAGAZINE_ENABLED } from '@/config';
 import { viewPath, handleViewLinkClick } from '@/lib/navigation';
 import CookieBanner from '@/components/CookieBanner';
 import DynamicBackground from '@/components/DynamicBackground';
+import { countryLabel } from '@/data/countries';
+
+/** Título del listado para cada etiqueta de la API, que viene en inglés. */
+const TAG_TITLES: Record<string, string> = {
+  latin: 'Música latina',
+  salsa: 'Salsa',
+  reggaeton: 'Reguetón',
+  cumbia: 'Cumbia',
+  bachata: 'Bachata',
+  vallenato: 'Vallenato',
+  rock: 'Rock',
+  'hip-hop': 'Rap',
+  electronic: 'Música electrónica',
+  jazz: 'Jazz',
+  lofi: 'Música para concentrarse',
+  dance: 'Música para bailar',
+  chillout: 'Música tranquila',
+  news: 'Noticias en vivo',
+  pop: 'Pop',
+  classical: 'Música clásica',
+  sports: 'Deportes',
+  podcast: 'Pódcast',
+};
 
 /**
  * Inner App component that has access to PlayerContext.
@@ -195,16 +218,15 @@ const SonicWaveApp: React.FC = () => {
 
     // Title Logic
     if (filters.name) setSearchTitle(`Resultados para: ${filters.name}`);
-    else if (filters.country) setSearchTitle(`Emisoras de ${filters.country}`);
+    else if (filters.country) setSearchTitle(`Emisoras de ${countryLabel(filters.country)}`);
     else if (filters.tag) {
-      const tagLabel = filters.tag.charAt(0).toUpperCase() + filters.tag.slice(1);
-      setSearchTitle(`Música ${tagLabel}`);
+      setSearchTitle(TAG_TITLES[filters.tag] ?? `Música ${filters.tag}`);
     } else {
       setSearchTitle('Todas las emisoras');
     }
 
-    if (filters.tag === 'podcast' && filters.name === 'spanish') setSearchTitle('Podcasts en Español');
-    if (filters.name === 'bts') setSearchTitle('BTS Army Radio');
+    if (filters.tag === 'podcast' && filters.name === 'spanish') setSearchTitle('Pódcast en español');
+    if (filters.name === 'bts') setSearchTitle('Radio de BTS');
 
     // Venezuela override
     if (filters.country === 'Venezuela') {
@@ -445,7 +467,7 @@ const SonicWaveApp: React.FC = () => {
               </h2>
               <p className="mt-8 text-[16px] md:text-[18px] leading-relaxed text-meta-c max-w-[58ch]">
                 SonicWave reúne más de 30 000 emisoras públicas y te ayuda a moverte
-                entre ellas. Escribe lo que te apetece escuchar —un género, un país o
+                entre ellas. Escribe lo que quieres escuchar —un género, un país o
                 simplemente «algo tranquilo para trabajar»— y el DJ lo convierte en una
                 búsqueda concreta, al instante y sin salir de la página.
               </p>

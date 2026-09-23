@@ -2,18 +2,20 @@
 import React from 'react';
 import { SearchFilters } from '@/types';
 import { useSEO } from '@/hooks/useSEO';
+import { countryLabel } from '@/data/countries';
 
 interface MapViewProps {
     onPerformSearch: (filters: SearchFilters) => void;
 }
 
+// Los países van con el nombre que entiende la API; en pantalla se muestran en español.
 const regions = [
-    { name: 'América del Sur', countries: ['Argentina', 'Brazil', 'Chile', 'Colombia', 'Peru', 'Venezuela'] },
-    { name: 'Europa', countries: ['Spain', 'Germany', 'France', 'Italy', 'United Kingdom', 'Netherlands'] },
-    { name: 'América del Norte', countries: ['USA', 'Canada', 'Mexico'] },
-    { name: 'Asia', countries: ['Japan', 'China', 'Korea', 'India', 'Thailand'] },
-    { name: 'África', countries: ['Nigeria', 'Egypt', 'South Africa', 'Morocco'] },
-    { name: 'Oceanía', countries: ['Australia', 'New Zealand'] },
+    { name: 'Sudamérica', countries: ['Colombia', 'Venezuela', 'Argentina', 'Peru', 'Chile', 'Ecuador', 'Bolivia', 'Paraguay', 'Uruguay', 'Brazil'] },
+    { name: 'Centroamérica y el Caribe', countries: ['Guatemala', 'Honduras', 'El Salvador', 'Nicaragua', 'Costa Rica', 'Panama', 'Cuba', 'Dominican Republic', 'Puerto Rico'] },
+    { name: 'Norteamérica', countries: ['Mexico', 'USA', 'Canada'] },
+    { name: 'Europa', countries: ['Spain', 'Portugal', 'France', 'Italy', 'Germany', 'United Kingdom', 'Netherlands'] },
+    { name: 'Asia', countries: ['Japan', 'Korea', 'China', 'India', 'Thailand'] },
+    { name: 'África y Oceanía', countries: ['Morocco', 'Egypt', 'Nigeria', 'South Africa', 'Australia', 'New Zealand'] },
 ];
 
 /**
@@ -22,8 +24,8 @@ const regions = [
  */
 const MapView: React.FC<MapViewProps> = ({ onPerformSearch }) => {
     useSEO({
-        title: 'Radio en vivo por países: escucha emisoras del mundo | SonicWave',
-        description: 'Explora emisoras de radio en directo por regiones y países: América, Europa, Asia, África y Oceanía. Elige un país y escucha lo que suena allí ahora mismo.',
+        title: 'Radio en vivo por país: emisoras de Latinoamérica y el mundo | SonicWave',
+        description: 'Escucha radio en vivo por país: México, Colombia, Venezuela, Argentina, Perú, Centroamérica, el Caribe y el resto del mundo. Elige un país y escucha lo que suena allí ahora mismo.',
         path: '/?view=EXPLORE'
     });
 
@@ -31,10 +33,10 @@ const MapView: React.FC<MapViewProps> = ({ onPerformSearch }) => {
         <div className="pt-10">
             <header className="pb-10">
                 <h1 className="t-display text-[clamp(2.5rem,12vw,8rem)]">
-                    Elige un<br />rincón del mundo
+                    Radio en vivo<br />por país
                 </h1>
                 <p className="mt-8 text-[17px] leading-relaxed max-w-[48ch] text-meta-c">
-                    Seis regiones, los países con más emisoras activas de cada una.
+                    De Latinoamérica al resto del mundo: los países con más emisoras activas de cada región.
                     Toca cualquiera y el índice se llena con sus señales.
                 </p>
             </header>
@@ -53,7 +55,7 @@ const MapView: React.FC<MapViewProps> = ({ onPerformSearch }) => {
                                         onClick={() => onPerformSearch({ country, limit: 30 })}
                                         className="w-full text-left px-5 py-2.5 text-[15px] hover:bg-ink hover:text-paper dark:hover:bg-paper dark:hover:text-ink transition-colors"
                                     >
-                                        {country}
+                                        {countryLabel(country)}
                                     </button>
                                 </li>
                             ))}
@@ -79,7 +81,7 @@ const MapView: React.FC<MapViewProps> = ({ onPerformSearch }) => {
                         onClick={() => onPerformSearch({ tag: 'news' })}
                         className="h-11 px-6 bg-ink text-paper dark:bg-paper dark:text-ink text-[15px] font-medium hover:bg-signal hover:text-white dark:hover:bg-signal dark:hover:text-white transition-colors"
                     >
-                        Noticias en directo
+                        Noticias en vivo
                     </button>
                 </div>
             </section>

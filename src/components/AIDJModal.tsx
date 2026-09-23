@@ -9,18 +9,18 @@ export const ALL_SUGGESTIONS = [
   'Rock argentino',
   'Jazz',
   'Noticias',
-  'Reggaeton',
+  'Reguetón',
   'Radio de Japón',
   'Clásica',
   'Música de los 80',
   'Algo para dormir',
   'Electrónica',
   'Rancheras',
-  'Podcast de cultura',
+  'Pódcast de cultura',
   'Metal',
   'Bachata',
-  'Radio de España',
-  'Indie',
+  'Salsa brava',
+  'Rock alternativo',
 ];
 
 interface Message {
