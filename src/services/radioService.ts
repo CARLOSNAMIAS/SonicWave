@@ -2,6 +2,13 @@ import { RadioStation, SearchFilters } from '@/types';
 
 const BASE_URL = '/api/stations';
 
+// La API registra estos países con otro nombre («The United States Of America»,
+// «The Republic Of Korea»), así que se buscan por su código ISO.
+const COUNTRY_CODES: Record<string, string> = {
+  'USA': 'US',
+  'South Korea': 'KR',
+};
+
 /**
  * Busca emisoras de radio con manejo mejorado de errores
  */
@@ -9,7 +16,11 @@ export const searchStations = async (filters: SearchFilters): Promise<RadioStati
   const params = new URLSearchParams();
   
   if (filters.name) params.append('name', filters.name);
-  if (filters.country) params.append('country', filters.country);
+  if (filters.country) {
+    const code = COUNTRY_CODES[filters.country];
+    if (code) params.append('countrycode', code);
+    else params.append('country', filters.country);
+  }
   if (filters.tag) params.append('tag', filters.tag);
   
   params.append('limit', (filters.limit || 50).toString());

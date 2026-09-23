@@ -146,3 +146,113 @@ li {
     color: #8c8880;
   }
 }
+
+/* --- Páginas de país y género ------------------------------------------- */
+
+.lead {
+  font-size: 18px;
+  line-height: 1.55;
+  max-width: 62ch;
+  margin-bottom: 32px;
+}
+
+.aside {
+  margin: 0 0 32px;
+  padding-left: 16px;
+  border-left: 3px solid var(--signal);
+}
+
+.aside p {
+  margin: 0;
+}
+
+.cta {
+  margin: 0 0 48px;
+}
+
+.cta a {
+  display: inline-block;
+  padding: 14px 28px;
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cta a:hover {
+  background: var(--signal);
+  color: #fff;
+}
+
+.stations {
+  list-style: none;
+  margin: 0 0 48px;
+  padding: 0;
+  counter-reset: none;
+}
+
+.station {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: 4px 16px;
+  align-items: baseline;
+  padding: 14px 0;
+  max-width: none;
+}
+
+@media (min-width: 640px) {
+  .station {
+    grid-template-columns: 3rem 1fr 10rem 6rem;
+  }
+}
+
+.station-index {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--meta);
+}
+
+.station-name {
+  font-weight: 600;
+}
+
+.station-meta {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--meta);
+  grid-column: 2;
+}
+
+@media (min-width: 640px) {
+  .station-meta {
+    grid-column: auto;
+  }
+}
+
+.related {
+  margin-top: 40px;
+}
+
+.related ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+
+.related li {
+  margin: 0;
+}
+
+.sin-datos {
+  color: var(--meta);
+  margin-bottom: 48px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .cta a {
+    background: var(--paper);
+    color: var(--ink);
+  }
+}

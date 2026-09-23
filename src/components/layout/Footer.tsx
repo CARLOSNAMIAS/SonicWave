@@ -3,6 +3,35 @@ import { MAGAZINE_ENABLED } from '@/config';
 import { ViewState } from '@/types';
 import { viewPath, handleViewLinkClick } from '@/lib/navigation';
 
+// Páginas estáticas generadas en el build (scripts/lib/pages-data.mjs). Se
+// escriben aquí a mano porque ese módulo pertenece al build, no a la aplicación.
+const PAISES = [
+    { slug: 'venezuela', name: 'Venezuela' },
+    { slug: 'colombia', name: 'Colombia' },
+    { slug: 'mexico', name: 'México' },
+    { slug: 'argentina', name: 'Argentina' },
+    { slug: 'espana', name: 'España' },
+    { slug: 'usa', name: 'Estados Unidos' },
+];
+
+const GENEROS = [
+    { slug: 'salsa', name: 'Salsa' },
+    { slug: 'reggaeton', name: 'Reguetón' },
+    { slug: 'cumbia', name: 'Cumbia' },
+    { slug: 'bachata', name: 'Bachata' },
+    { slug: 'vallenato', name: 'Vallenato' },
+    { slug: 'latina', name: 'Música latina' },
+    { slug: 'rock', name: 'Rock' },
+    { slug: 'rap', name: 'Rap' },
+    { slug: 'electronica', name: 'Electrónica' },
+    { slug: 'jazz', name: 'Jazz' },
+    { slug: 'dance', name: 'Música para bailar' },
+    { slug: 'lofi', name: 'Lo-fi' },
+    { slug: 'tranquila', name: 'Música tranquila' },
+    { slug: 'podcast', name: 'Pódcast' },
+    { slug: 'bts', name: 'BTS' },
+];
+
 /**
  * Footer component containing legal links, contact info, and disclaimer.
  */
@@ -70,6 +99,30 @@ const Footer: React.FC<FooterProps> = ({ onAboutClick, onMagazineClick }) => {
                             <li><a href="/privacy.html" className="hover:text-signal transition-colors">Privacidad</a></li>
                             <li><a href="/terms.html" className="hover:text-signal transition-colors">Términos</a></li>
                             <li><a href="/cookies.html" className="hover:text-signal transition-colors">Cookies</a></li>
+                        </ul>
+                    </nav>
+
+                    <nav className="md:col-span-3">
+                        <h2 className="t-data text-[10px] text-meta-c mb-4">Radio por países</h2>
+                        <ul className="flex flex-wrap gap-x-6 gap-y-2.5 text-[15px]">
+                            {PAISES.map(p => (
+                                <li key={p.slug}>
+                                    <a href={`/radio/${p.slug}`} className="hover:text-signal transition-colors">
+                                        {p.name}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+
+                        <h2 className="t-data text-[10px] text-meta-c mb-4 mt-8">Por género</h2>
+                        <ul className="flex flex-wrap gap-x-6 gap-y-2.5 text-[15px]">
+                            {GENEROS.map(g => (
+                                <li key={g.slug}>
+                                    <a href={`/genero/${g.slug}`} className="hover:text-signal transition-colors">
+                                        {g.name}
+                                    </a>
+                                </li>
+                            ))}
                         </ul>
                     </nav>
                 </div>
