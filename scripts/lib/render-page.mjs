@@ -54,7 +54,7 @@ const renderJsonLd = (page, content, stations) => {
         },
     };
     // Un nombre de emisora con «</script>» cerraría el bloque antes de tiempo.
-    return JSON.stringify(datos, null, 2).replace(/</g, '\u003c');
+    return JSON.stringify(datos, null, 2).replace(/</g, '\\u003c');
 };
 
 /**
