@@ -107,7 +107,9 @@ ${stations.map(renderStation).join('\n')}
     <meta property="og:title" content="${escapeHtml(content.title)}">
     <meta property="og:description" content="${escapeHtml(content.description)}">
     <meta property="og:image" content="${SITIO}/compartir.png">
-    <link rel="icon" href="/faviconn.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
