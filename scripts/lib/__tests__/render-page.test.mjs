@@ -89,4 +89,26 @@ describe('renderPage', () => {
         expect(html).toContain('ca-pub-6983431049380018');
         expect(html).toContain('/pages.css');
     });
+
+    it('muestra solo el código del país, no el nombre largo en inglés de la API', () => {
+        const html = render({
+            stations: [{ name: 'Radio X', country: 'The Bolivarian Republic Of Venezuela', countrycode: 'VE', bitrate: 128, homepage: '' }],
+        });
+        expect(html).not.toContain('Bolivarian');
+        expect(html).toContain('>VE<');
+    });
+
+    it('limpia los espacios del nombre y no repite emisoras', () => {
+        const html = render({
+            stations: [
+                { name: '		Radio Rumbos 670 AM', countrycode: 'VE', bitrate: 32 },
+                { name: 'RADIO RUMBOS 670 AM ', countrycode: 'VE', bitrate: 32 },
+                { name: 'La Mega', countrycode: 'VE', bitrate: 64 },
+            ],
+        });
+        expect(html).toContain('<span class="station-name">Radio Rumbos 670 AM</span>');
+        expect(html.match(/class="station"/g)).toHaveLength(2);
+        const datos = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+        expect(datos.mainEntity.itemListElement).toHaveLength(2);
+    });
 });

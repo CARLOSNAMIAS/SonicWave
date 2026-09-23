@@ -7,7 +7,9 @@ const ADSENSE = 'ca-pub-6983431049380018';
 /** Una fila del índice, con la misma disposición que la aplicación. */
 const renderStation = (station, indice) => {
     const posicion = String(indice + 1).padStart(3, '0');
-    const procedencia = [station.countrycode, station.country].filter(Boolean).map(escapeHtml).join(' ');
+    // La API da el nombre oficial en inglés («The Bolivarian Republic Of
+    // Venezuela»): el código basta y no rompe la fila.
+    const procedencia = escapeHtml(station.countrycode);
     const calidad = station.bitrate ? `${escapeHtml(station.bitrate)} kbps` : '—';
     return `      <li class="station">
         <span class="station-index">${posicion}</span>
@@ -62,7 +64,22 @@ const renderJsonLd = (page, content, stations) => {
  * Todo el contenido va escrito en el HTML: estas páginas deben leerse sin
  * ejecutar JavaScript, que es justamente lo que un rastreador no garantiza.
  */
-export const renderPage = ({ page, content, stations, allPages }) => {
+/** La API trae nombres con espacios sobrantes y la misma emisora varias veces. */
+const cleanStations = (stations) => {
+    const vistas = new Set();
+    const limpias = [];
+    for (const station of stations) {
+        const name = String(station.name ?? '').trim();
+        const clave = name.toLowerCase();
+        if (!name || vistas.has(clave)) continue;
+        vistas.add(clave);
+        limpias.push({ ...station, name });
+    }
+    return limpias;
+};
+
+export const renderPage = ({ page, content, stations: brutas, allPages }) => {
+    const stations = cleanStations(brutas);
     const ruta = pagePath(page);
     const url = SITIO + ruta;
     const enlaceApp = `/?${page.apiParam}=${encodeURIComponent(page.apiValue)}`;
